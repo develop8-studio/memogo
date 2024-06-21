@@ -10,7 +10,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <Head>
         <title>MemoGo</title>
         <link rel="icon" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" href="/memogo-apple-touch-icon.png" />
       </Head>
       <Component {...pageProps} />
     </ChakraProvider>
