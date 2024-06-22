@@ -1,14 +1,14 @@
 import Layout from "@/components/Layout"
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Center, Divider, Heading, Image, Input, ListItem, OrderedList, Text } from "@chakra-ui/react"
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Card, CardHeader, Center, Divider, Heading, Image, Input, ListItem, OrderedList, Text } from "@chakra-ui/react"
 
 export default function Home() {
   return (
     <>
       <div className="flex flex-col w-full min-h-screen space-y-2.5 p-3">
-        <Layout flex={true}>
+        {/* <Layout flex={true}>
           <Input placeholder="検索したいワードを入力..." />
           <Button colorScheme="teal" className="ml-2.5">検索</Button>
-        </Layout>
+        </Layout> */}
         <Layout>
           <Alert status="warning" className="rounded-md mb-3">
             <AlertIcon />
