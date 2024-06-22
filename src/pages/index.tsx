@@ -18,7 +18,7 @@ export default function Home() {
         <div className="space-y-[30px]">
           <Layout>
             <Center className="flex flex-col">
-              <Image src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi0Wu9z6WTec80O1qqHWaIO7EqFqmeOtNqtgD6Isczo9T6DLjVTGRS_qvNLU9QNXI0IT15VkC3ssKM5dLveBSWNiBPPz427_dVgBAgedt8b5GBffS-YZ5UCMhwXE3navyXsKC0FlUGWfOS0/s800/face_smile_man2.png' alt='' className="rounded-md mb-3 max-h-[250px]" />
+              <Image src='/top-image/man-smile.png' alt='' className="rounded-md mb-3 max-h-[250px]" />
               <Heading className="mb-2.5">全てを演繹推論で完結させる男</Heading>
               <Text>人はいずれ死ぬ、あなたは人である、つまりあなたはいずれ死ぬ。</Text>
             </Center>
