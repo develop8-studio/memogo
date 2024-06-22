@@ -66,7 +66,9 @@ const Editor = () => {
                 Publish
             </button>
             <div className="mt-4">
-                <ReactMarkdown children={content} remarkPlugins={[remarkGfm]} />
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {content}
+                </ReactMarkdown>
             </div>
         </div>
     );

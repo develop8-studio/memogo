@@ -33,7 +33,9 @@ const Memo = () => {
 
     return (
         <div className="container mx-auto p-4">
-            <ReactMarkdown children={content} remarkPlugins={[remarkGfm]} />
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {content}
+            </ReactMarkdown>
             {typeof id === 'string' && (
                 <>
                     <LikeButton memoId={id} />
