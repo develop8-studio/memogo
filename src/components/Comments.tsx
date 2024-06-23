@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
-import { collection, addDoc, query, where, getDocs, serverTimestamp, DocumentData } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { Button, Input, Text, Avatar, Box, VStack, HStack, Divider, Link, Image } from '@chakra-ui/react';
+import NextLink from 'next/link';
 
 interface Comment {
     memoId: string;
     userId: string;
     displayName: string;
+    photoURL: string;
     text: string;
     createdAt: any;
 }
@@ -17,52 +20,82 @@ interface CommentsProps {
 const Comments = ({ memoId }: CommentsProps) => {
     const [comment, setComment] = useState<string>('');
     const [comments, setComments] = useState<Comment[]>([]);
+    const [displayName, setDisplayName] = useState<string>('Anonymous');
+    const [photoURL, setPhotoURL] = useState<string>('/default-avatar.png');
     const currentUser = auth.currentUser;
 
+    const fetchComments = async () => {
+        const q = query(collection(db, 'comments'), where('memoId', '==', memoId));
+        const querySnapshot = await getDocs(q);
+        const fetchedComments: Comment[] = querySnapshot.docs.map(doc => doc.data() as Comment);
+        setComments(fetchedComments);
+    };
+
     useEffect(() => {
-        const fetchComments = async () => {
-            const q = query(collection(db, 'comments'), where('memoId', '==', memoId));
-            const querySnapshot = await getDocs(q);
-            const fetchedComments: Comment[] = querySnapshot.docs.map(doc => doc.data() as Comment);
-            setComments(fetchedComments);
-        };
+        if (currentUser) {
+            const fetchUserDetails = async () => {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setDisplayName(userData.displayName || 'Anonymous');
+                    setPhotoURL(userData.photoURL || '/default-avatar.png');
+                }
+            };
+            fetchUserDetails();
+        }
         fetchComments();
-    }, [memoId]);
+    }, [memoId, currentUser]);
 
     const handleComment = async () => {
         if (!currentUser) return;
         await addDoc(collection(db, 'comments'), {
             memoId,
             userId: currentUser.uid,
-            displayName: currentUser.displayName,
+            displayName,
+            photoURL,
             text: comment,
             createdAt: serverTimestamp()
         });
         setComment('');
+        fetchComments();
     };
 
     return (
-        <div>
-            <div className="mb-4">
-                <textarea
+        <Box w="full">
+            <HStack mt={5} spacing={2.5}>
+                <Input
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    className="w-full p-2 border rounded mb-2"
                     placeholder="Write a comment..."
+                    bg="white"
+                    border="1px"
+                    borderColor="gray.300"
+                    borderRadius="md"
+                    p={2}
                 />
-                <button onClick={handleComment} className="bg-blue-500 text-white px-4 py-2 rounded">
+                <Button onClick={handleComment} colorScheme="blue" borderRadius="md">
                     Comment
-                </button>
-            </div>
-            <div>
+                </Button>
+            </HStack>
+            <VStack align="start" spacing={3} className="mt-5">
                 {comments.map((c, index) => (
-                    <div key={index} className="mb-2 border-b pb-2">
-                        <strong>{c.displayName}</strong>
-                        <p>{c.text}</p>
-                    </div>
+                    <Box key={index} w="full">
+                        <HStack align="start">
+                            <NextLink href={`/user?id=${c.userId}`} passHref>
+                                <Image src={c.photoURL} className="w-10 h-10 rounded-full border" />
+                            </NextLink>
+                            <VStack align="start" spacing={1}>
+                                <NextLink href={`/user?id=${c.userId}`} passHref>
+                                    <Text fontWeight="bold">{c.displayName}</Text>
+                                </NextLink>
+                                <Text>{c.text}</Text>
+                            </VStack>
+                        </HStack>
+                        {index < comments.length - 1 && <Divider mt={3} />}
+                    </Box>
                 ))}
-            </div>
-        </div>
+            </VStack>
+        </Box>
     );
 };
 

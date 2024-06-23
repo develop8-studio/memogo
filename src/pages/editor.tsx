@@ -1,21 +1,44 @@
-import { useState, ChangeEvent } from 'react';
-import { db } from '@/firebase/firebaseConfig';
+import { useState, ChangeEvent, useEffect } from 'react';
+import { db, auth } from '@/firebase/firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { v4 as uuidv4 } from 'uuid';
+import { Button, Input, Textarea } from '@chakra-ui/react';
+import { onAuthStateChanged } from 'firebase/auth';
+import Layout from '@/components/Layout';
+import Head from 'next/head';
 
 const Editor = () => {
     const [content, setContent] = useState<string>('');
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');
+    const [userId, setUserId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUserId(user.uid);
+            } else {
+                setUserId(null);
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     const saveMemo = async () => {
         const uid = uuidv4(); // generate a unique id
+        if (!userId) {
+            alert('User not logged in');
+            return;
+        }
+
         try {
             await addDoc(collection(db, 'memos'), {
                 uid,
+                userId,
                 title,
                 description,
                 content,
@@ -42,34 +65,39 @@ const Editor = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            <input
+        <div className="container mx-auto my-10">
+            <Head>
+                <title>Editor</title>
+            </Head>
+            <Layout>
+            <Input
                 type="text"
                 value={title}
                 onChange={handleTitleChange}
-                className="w-full p-2 border rounded mb-4"
+                className="w-full mb-3"
                 placeholder="Enter the title"
             />
-            <textarea
+            <Textarea
                 value={description}
                 onChange={handleDescriptionChange}
-                className="w-full p-2 border rounded mb-4"
+                className="w-full mb-3"
                 placeholder="Enter the description"
             />
-            <textarea
+            <Textarea
                 value={content}
                 onChange={handleContentChange}
-                className="w-full h-64 p-2 border rounded mb-4"
+                className="w-full mb-3"
                 placeholder="Write your markdown here..."
             />
-            <button onClick={saveMemo} className="bg-blue-500 text-white px-4 py-2 rounded">
+            <Button onClick={saveMemo} colorScheme='teal'>
                 Publish
-            </button>
-            <div className="mt-4">
+            </Button>
+            <div className="mt-5">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {content}
                 </ReactMarkdown>
             </div>
+            </Layout>
         </div>
     );
 };

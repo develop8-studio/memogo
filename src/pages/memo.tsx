@@ -8,11 +8,20 @@ import Comments from '../components/Comments';
 import BookmarkButton from '../components/BookmarkButton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Head from 'next/head';
+import { Center, Heading, Text } from '@chakra-ui/react';
+import Layout from '@/components/Layout';
+
+interface MemoData {
+    title: string;
+    description: string;
+    content: string;
+}
 
 const Memo = () => {
     const router = useRouter();
     const { id } = router.query;
-    const [content, setContent] = useState('');
+    const [memoData, setMemoData] = useState<MemoData | null>(null);
 
     useEffect(() => {
         const fetchMemo = async () => {
@@ -20,7 +29,8 @@ const Memo = () => {
                 const docRef = doc(db, 'memos', id);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    setContent(docSnap.data().content);
+                    const data = docSnap.data() as MemoData;
+                    setMemoData(data);
                 } else {
                     console.log('No such document!');
                 }
@@ -32,18 +42,39 @@ const Memo = () => {
     }, [id]);
 
     return (
-        <div className="container mx-auto p-4">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {content}
-            </ReactMarkdown>
-            {typeof id === 'string' && (
-                <>
-                    <LikeButton memoId={id} />
-                    <BookmarkButton memoId={id} />
-                    <Comments memoId={id} />
-                </>
+        <>
+            {memoData && (
+                <Head>
+                    <title>{memoData.title}</title>
+                </Head>
             )}
-        </div>
+            <div className='container mx-auto my-10'>
+                {memoData && (
+                    <Layout>
+                        <Center className="flex flex-col mb-10">
+                            <Heading className="mb-2.5">{memoData.title}</Heading>
+                            <Text>{memoData.description}</Text>
+                        </Center>
+                    </Layout>
+                )}
+                <Layout>
+                    <div className="mb-5">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {memoData ? memoData.content : ''}
+                        </ReactMarkdown>
+                    </div>
+                </Layout>
+                <Layout>
+                {typeof id === 'string' && (
+                    <>
+                        <LikeButton memoId={id} />
+                        <BookmarkButton memoId={id} />
+                        <Comments memoId={id} />
+                    </>
+                )}
+                </Layout>
+            </div>
+        </>
     );
 };
 

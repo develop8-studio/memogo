@@ -3,6 +3,9 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
+import Layout from '@/components/Layout';
+import Head from 'next/head';
+import { Heading } from '@chakra-ui/react';
 
 interface Memo {
     title: string;
@@ -47,18 +50,23 @@ const BookmarkedMemos = () => {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-xl font-bold mb-4">Bookmarked Memos</h1>
-            {memos.length > 0 ? (
-                memos.map((memo, index) => (
-                    <Link href={`/memo?id=${memo.uid}`} key={index} className="block mb-4 p-4 border rounded hover:bg-gray-100">
-                        <h2 className="text-lg font-bold">{memo.title}</h2>
-                        <p>{memo.description}</p>
-                    </Link>
-                ))
-            ) : (
-                <p>No bookmarked memos found.</p>
-            )}
+        <div className="container mx-auto my-10">
+            <Head>
+                <title>Bookmarks</title>
+            </Head>
+            <Layout>
+                <Heading size="md" className='mb-5'>Bookmarks</Heading>
+                {memos.length > 0 ? (
+                    memos.map((memo, index) => (
+                        <Link href={`/memo?id=${memo.uid}`} key={index} className="block mb-3 p-[15px] border rounded-md hover:bg-slate-50 transition-colors">
+                            <h2 className="text-lg font-bold">{memo.title}</h2>
+                            <p>{memo.description}</p>
+                        </Link>
+                    ))
+                ) : (
+                    <p>No bookmarked memos found.</p>
+                )}
+            </Layout>
         </div>
     );
 };

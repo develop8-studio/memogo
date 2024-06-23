@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { collection, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { FaHeart } from 'react-icons/fa';
+import { Button, ButtonGroup, Text } from '@chakra-ui/react';
 
 interface LikeButtonProps {
     memoId: string;
@@ -10,7 +11,6 @@ interface LikeButtonProps {
 const LikeButton: React.FC<LikeButtonProps> = ({ memoId }) => {
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(0);
-    const auth = getAuth();
     const currentUser = auth.currentUser;
 
     useEffect(() => {
@@ -57,9 +57,24 @@ const LikeButton: React.FC<LikeButtonProps> = ({ memoId }) => {
     };
 
     return (
-        <button onClick={handleLike} className={`px-4 py-2 rounded ${liked ? 'bg-red-500' : 'bg-gray-500'} text-white`}>
-            {liked ? 'Unlike' : 'Like'} ({likesCount})
-        </button>
+        <Button
+            onClick={handleLike}
+            background="none"
+            border="none"
+            p="0"
+            minW="auto"
+            height="auto"
+            sx={{
+                '&:hover': {
+                    background: 'none',
+                    color: 'inherit',
+                },
+            }}
+            className="mr-3"
+        >
+            <FaHeart className={`${liked ? 'text-red-500' : 'text-slate-300'} mr-1.5`} />
+            <Text className="text-slate-500">{likesCount}</Text>
+        </Button>
     );
 };
 

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { Button } from '@chakra-ui/react';
+import { FaBookmark } from 'react-icons/fa';
 
 type BookmarkButtonProps = {
     memoId: string;
@@ -38,9 +40,22 @@ const BookmarkButton = ({ memoId }: BookmarkButtonProps) => {
     };
 
     return (
-        <button onClick={handleBookmark} className={`px-4 py-2 rounded ${bookmarked ? 'bg-yellow-500' : 'bg-gray-500'} text-white`}>
-            {bookmarked ? 'Unbookmark' : 'Bookmark'}
-        </button>
+        <Button
+            onClick={handleBookmark}
+            background="none"
+            border="none"
+            p="0"
+            minW="auto"
+            height="auto"
+            sx={{
+                '&:hover': {
+                    background: 'none',
+                    color: 'inherit',
+                },
+            }}
+        >
+            <FaBookmark className={`${bookmarked ? 'text-yellow-500' : 'text-slate-300'}`} />
+        </Button>
     );
 };
 

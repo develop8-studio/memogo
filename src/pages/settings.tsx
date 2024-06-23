@@ -4,7 +4,7 @@ import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { deleteUser } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Button, Heading, Input, Text, Textarea } from '@chakra-ui/react';
+import { Button, Divider, Heading, Input, Text, Textarea } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 
 const AccountSettings = () => {
