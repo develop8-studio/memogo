@@ -42,7 +42,7 @@ const Login = () => {
                     Login
                 </Button>
                 <Text>
-                    Don't have an account?{' '}
+                    Don&apos;t have an account?{' '}
                     <Link color="blue.500">
                         <NextLink href="/register">
                         Go to Register
