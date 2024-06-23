@@ -67,11 +67,6 @@ const Comments = ({ memoId }: CommentsProps) => {
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Write a comment..."
-                    bg="white"
-                    border="1px"
-                    borderColor="gray.300"
-                    borderRadius="md"
-                    p={2}
                 />
                 <Button onClick={handleComment} colorScheme="blue" borderRadius="md">
                     Comment
