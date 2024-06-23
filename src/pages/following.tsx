@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Heading, Text, Avatar, Box, VStack, HStack } from '@chakra-ui/react';
 import Head from 'next/head';
 import Layout from '@/components/Layout';
+import useAuthRedirect from '@/hooks/useAuthRedirect';
 
 interface User {
     uid: string;
@@ -14,6 +15,7 @@ interface User {
 }
 
 const Following = () => {
+    useAuthRedirect();
     const [following, setFollowing] = useState<User[]>([]);
     const currentUser = auth.currentUser;
 

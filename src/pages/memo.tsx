@@ -84,7 +84,7 @@ const Memo = () => {
                             <div className='mb-10 flex justify-end'>
                                 <Menu>
                                 <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
-                                    Actions
+                                    Details
                                 </MenuButton>
                                 <MenuList>
                                     <MenuItem onClick={deleteMemo}>Delete</MenuItem>

@@ -6,8 +6,10 @@ import { deleteUser } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Button, Divider, Heading, Input, Text, Textarea } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
+import useAuthRedirect from '@/hooks/useAuthRedirect';
 
 const AccountSettings = () => {
+    useAuthRedirect();
     const [user, setUser] = useState<any>(null);
     const [displayName, setDisplayName] = useState('');
     const [bio, setBio] = useState('');

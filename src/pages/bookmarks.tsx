@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
 import { Heading } from '@chakra-ui/react';
+import useAuthRedirect from '@/hooks/useAuthRedirect';
 
 interface Memo {
     title: string;
@@ -14,6 +15,7 @@ interface Memo {
 }
 
 const BookmarkedMemos = () => {
+    useAuthRedirect();
     const [memos, setMemos] = useState<Memo[]>([]);
     const [loading, setLoading] = useState(true);
 

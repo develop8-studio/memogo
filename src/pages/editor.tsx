@@ -10,8 +10,10 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
+import useAuthRedirect from '@/hooks/useAuthRedirect';
 
 const Editor = () => {
+    useAuthRedirect();
     const [content, setContent] = useState<string>('');
     const [title, setTitle] = useState<string>('');
     const [description, setDescription] = useState<string>('');

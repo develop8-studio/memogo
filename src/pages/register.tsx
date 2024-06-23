@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { Button, Heading, Input, Link, Text } from '@chakra-ui/react';
+import Layout from '@/components/Layout';
+import NextLink from "next/link"
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -25,32 +28,42 @@ const Register = () => {
     };
 
     return (
-        <div className="container mx-auto p-4">
-        <h1 className="text-xl font-bold mb-4">Register</h1>
-        <input
+        <div className="container mx-auto my-10">
+        <Layout>
+        <Heading size="lg" className="mb-5">Register</Heading>
+        <Input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             placeholder="Display Name"
-            className="w-full p-2 border rounded mb-4"
+            className="w-full mb-5"
         />
-        <input
+        <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="w-full p-2 border rounded mb-4"
+            className="w-full mb-5"
         />
-        <input
+        <Input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="w-full p-2 border rounded mb-4"
+            className="w-full mb-5"
         />
-        <button onClick={handleRegister} className="bg-blue-500 text-white px-4 py-2 rounded">
+        <Button onClick={handleRegister} colorScheme='teal' className="mb-5">
             Register
-        </button>
+        </Button>
+        <Text>
+            Already have an account?{' '}
+            <Link color="blue.500">
+                <NextLink href="/login">
+                    Go to Login
+                </NextLink>
+            </Link>
+        </Text>
+        </Layout>
         </div>
     );
 };
