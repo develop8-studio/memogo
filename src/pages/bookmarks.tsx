@@ -29,7 +29,7 @@ const BookmarkedMemos = () => {
                 const memoDoc = await getDoc(memoDocRef);
                 if (memoDoc.exists()) {
                     const memoData = memoDoc.data() as Memo;
-                    memoData.uid = memoId;  // メモのUUIDを保存
+                    memoData.uid = memoId;
                     bookmarkedMemos.push(memoData);
                 }
             }
