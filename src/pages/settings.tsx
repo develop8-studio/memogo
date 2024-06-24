@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { deleteUser } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Button, Divider, Heading, Input, Text, Textarea } from '@chakra-ui/react';
+import { Button, Input, Text, Textarea, Image } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
+import Head from 'next/head';
+import { FaUpload } from "react-icons/fa";
 
 const AccountSettings = () => {
     useAuthRedirect();
@@ -15,9 +17,11 @@ const AccountSettings = () => {
     const [bio, setBio] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
+    const [photoURL, setPhotoURL] = useState('');
 
     const currentUser = auth.currentUser;
     const router = useRouter();
+    const fileInput = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -29,6 +33,7 @@ const AccountSettings = () => {
                     setUser(userData);
                     setDisplayName(userData.displayName);
                     setBio(userData.bio);
+                    setPhotoURL(userData.photoURL || '');
                 }
             }
         };
@@ -56,6 +61,7 @@ const AccountSettings = () => {
                 await uploadBytes(fileRef, file);
                 const photoURL = await getDownloadURL(fileRef);
                 updatedData.photoURL = photoURL;
+                setPhotoURL(photoURL);
                 setUploading(false);
             }
 
@@ -77,10 +83,12 @@ const AccountSettings = () => {
 
     return (
         <div className="container mx-auto my-10">
+            <Head>
+                <title>Settings</title>
+            </Head>
             <Layout>
-                <Heading size="md">Account Settings</Heading>
-                <div className="mt-5">
-                    <Text className="mb-1">Display Name</Text>
+                <div>
+                    <Text className="mb-1">Name</Text>
                     <Input
                         type="text"
                         value={displayName}
@@ -94,17 +102,31 @@ const AccountSettings = () => {
                         className="w-full mb-5"
                     />
                     <Text className="mb-1">Profile Picture</Text>
+                    {photoURL && (
+                        <Image
+                            src={photoURL}
+                            alt="Profile Picture"
+                            className="w-20 h-20 mb-5 rounded-full"
+                        />
+                    )}
+                    <Button onClick={() => fileInput.current?.click()} className="w-full mb-5">
+                        {/* <FaUpload className='text-gray-300 text-lg mr-1.5' /> */}
+                        Upload Icon
+                    </Button>
                     <input
                         type="file"
                         onChange={handleFileChange}
-                        className="w-full p-3 border rounded-md mb-5"
+                        ref={fileInput}
+                        className="hidden"
                     />
-                    <Button onClick={updateProfile} colorScheme='green' disabled={uploading}>
-                        {uploading ? 'Uploading...' : 'Update Profile'}
-                    </Button>
-                    <Button onClick={deleteAccount} className="mt-3 md:mt-0 md:ml-3" colorScheme='red'>
-                        Delete Account
-                    </Button>
+                    <div className='flex space-x-3 w-full sm:w-fit-content'>
+                        <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full sm:w-auto">
+                            {uploading ? 'Uploading...' : 'Update Profile'}
+                        </Button>
+                        <Button onClick={deleteAccount} colorScheme='red' className="w-full sm:w-auto">
+                            Delete Account
+                        </Button>
+                    </div>
                 </div>
             </Layout>
         </div>

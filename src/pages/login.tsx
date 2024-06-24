@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { auth } from "@/firebase/firebaseConfig";
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import Layout from '@/components/Layout';
 import { Button, Heading, Input, Text, Link } from '@chakra-ui/react';
 import NextLink from "next/link"
+import { FaGoogle } from "react-icons/fa"
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -17,6 +18,16 @@ const Login = () => {
             router.push('/');
         } catch (error) {
             console.error('Error logging in:', error);
+        }
+    };
+
+    const handleGoogleSignIn = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            router.push('/');
+        } catch (error) {
+            console.error('Error signing in with Google:', error);
         }
     };
 
@@ -41,11 +52,14 @@ const Login = () => {
                 <Button onClick={handleLogin} colorScheme='blue' className="mb-5">
                     Login
                 </Button>
+                <Button onClick={handleGoogleSignIn} colorScheme='gray' className="ml-3 mb-5">
+                    <FaGoogle className="mr-1.5 text-gray-300" />Login with Google
+                </Button>
                 <Text>
                     Don&apos;t have an account?{' '}
                     <Link color="blue.500">
                         <NextLink href="/register">
-                        Go to Register
+                            Go to Register
                         </NextLink>
                     </Link>
                 </Text>

@@ -99,22 +99,24 @@ const UserPage = () => {
                     <img src={user.photoURL} alt={user.displayName} className="w-20 h-20 rounded-full mr-3 border" />
                     <div>
                         <Heading size="md">{user.displayName}</Heading>
-                        <Text className="text-slate-500">{user.bio}</Text>
+                        <Text className="text-slate-500 lg:whitespace-pre-line">{user.bio}</Text>
                     </div>
-                    {currentUser && currentUser.uid !== id && (
-                        <Button
-                            onClick={isFollowing ? handleUnfollow : handleFollow}
-                            colorScheme={isFollowing ? 'red' : 'blue'}
-                            className='ml-auto'
-                        >
-                            {isFollowing ? 'Unfollow' : 'Follow'}
-                        </Button>
-                    )}
-                    {currentUser && currentUser.uid === id && (
-                        <Button className='ml-auto'>
-                            <Link href="/settings/account">Edit profile</Link>
-                        </Button>
-                    )}
+                    <div className="ml-auto">
+                        {currentUser && currentUser.uid !== id && (
+                            <Button
+                                onClick={isFollowing ? handleUnfollow : handleFollow}
+                                colorScheme={isFollowing ? 'red' : 'blue'}
+                                className='ml-3'
+                            >
+                                {isFollowing ? 'Unfollow' : 'Follow'}
+                            </Button>
+                        )}
+                        {currentUser && currentUser.uid === id && (
+                            <Button className='ml-3'>
+                                <Link href="/settings/account">Edit profile</Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
                 <div className="mt-[30px]">
                     <ul className="space-y-3">
