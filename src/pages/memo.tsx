@@ -102,7 +102,7 @@ const Memo = () => {
                     </Layout>
                 )}
                 <Layout>
-                    <div className="mb-5">
+                    <div className="markdown-body">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {memoData ? memoData.content : ''}
                         </ReactMarkdown>
@@ -110,11 +110,11 @@ const Memo = () => {
                 </Layout>
                 <Layout>
                     {typeof id === 'string' && (
-                        <>
+                        <div className='mt-5'>
                             <LikeButton memoId={id} />
                             <BookmarkButton memoId={id} />
                             <Comments memoId={id} />
-                        </>
+                        </div>
                     )}
                 </Layout>
             </div>

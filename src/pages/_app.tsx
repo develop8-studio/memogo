@@ -6,6 +6,8 @@ import Head from "next/head"
 import Navbar from "@/components/Navbar"
 import Image from "next/image"
 import SideBar from "@/components/SideBar"
+import 'github-markdown-css/github-markdown.css'
+import '@/styles/md.css'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaFile, FaFire } from 'react-icons/fa';
+import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaFire } from 'react-icons/fa';
 import Link from 'next/link';
 import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { useRouter } from 'next/router';
+import { Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay } from '@chakra-ui/react';
 
 interface MenuItemProps {
     icon: React.ReactNode;
@@ -14,6 +15,9 @@ interface MenuItemProps {
 const SideBar: React.FC = () => {
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const onClose = () => setIsAlertOpen(false);
+    const cancelRef = React.useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -28,25 +32,60 @@ const SideBar: React.FC = () => {
     }, []);
 
     const handleLogout = async () => {
+        setIsAlertOpen(false);
         await signOut(auth);
         router.push('/login');
     };
 
+    const handleLogoutClick = () => {
+        setIsAlertOpen(true);
+    };
+
     return (
-        <div className="hidden md:flex sticky top-0 h-screen w-16 flex-col bg-gray-800 text-white shadow-sm">
-            <div className="flex-grow">
-                <MenuItem icon={<FaHome className="text-lg" />} href="/" />
-                <MenuItem icon={<FaFire className="text-lg" />} href="/feed" />
-                {user && <MenuItem icon={<FaUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
-                <MenuItem icon={<FaUserFriends className="text-lg" />} href="/following" />
-                <MenuItem icon={<FaBookmark className="text-lg" />} href="/bookmarks" />
-                <MenuItem icon={<FaPen className="text-lg" />} href="/editor" />
-                <MenuItem icon={<FaCog className="text-lg" />} href="/settings" />
+        <>
+            <div className="hidden md:flex sticky top-0 h-screen w-16 flex-col bg-gray-800 text-white shadow-sm">
+                <div className="flex-grow">
+                    <MenuItem icon={<FaHome className="text-lg" />} href="/" />
+                    <MenuItem icon={<FaFire className="text-lg" />} href="/feed" />
+                    {user && <MenuItem icon={<FaUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
+                    <MenuItem icon={<FaUserFriends className="text-lg" />} href="/following" />
+                    <MenuItem icon={<FaBookmark className="text-lg" />} href="/bookmarks" />
+                    <MenuItem icon={<FaPen className="text-lg" />} href="/editor" />
+                    <MenuItem icon={<FaCog className="text-lg" />} href="/settings" />
+                </div>
+                <div>
+                    <MenuItem icon={<FaSignOutAlt className="text-lg" />} onClick={handleLogoutClick} />
+                </div>
             </div>
-            <div>
-                <MenuItem icon={<FaSignOutAlt className="text-lg" />} onClick={handleLogout} />
-            </div>
-        </div>
+
+            <AlertDialog
+                isOpen={isAlertOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+                isCentered
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Logout
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            Are you sure you want to log out?
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onClose}>
+                                Cancel
+                            </Button>
+                            <Button colorScheme="blue" onClick={handleLogout} ml={3}>
+                                Logout
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+        </>
     );
 };
 

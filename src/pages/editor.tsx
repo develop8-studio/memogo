@@ -1,11 +1,23 @@
-import { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState, ChangeEvent, useEffect, useRef } from 'react';
 import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { v4 as uuidv4 } from 'uuid';
-import { Button, Input, Textarea, useClipboard } from '@chakra-ui/react';
+import {
+    Button,
+    Input,
+    Textarea,
+    useClipboard,
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogContent,
+    AlertDialogOverlay,
+    Text
+} from '@chakra-ui/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Layout from '@/components/Layout';
@@ -20,6 +32,11 @@ const Editor = () => {
     const [userId, setUserId] = useState<string | null>(null);
     const [imageUrl, setImageUrl] = useState<string>('');
     const { onCopy, hasCopied } = useClipboard(imageUrl);
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const [isSaveAlertOpen, setIsSaveAlertOpen] = useState(false);
+    const [isValidationError, setIsValidationError] = useState(false);
+    const cancelRef = useRef<HTMLButtonElement>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -35,7 +52,7 @@ const Editor = () => {
 
     const saveMemo = async () => {
         if (!userId) {
-            alert('User not logged in');
+            setIsSaveAlertOpen(true);
             return;
         }
 
@@ -47,7 +64,7 @@ const Editor = () => {
                 content,
                 createdAt: new Date()
             });
-            alert('Memo saved!');
+            setIsSaveAlertOpen(true);
             setTitle('');
             setDescription('');
             setContent('');
@@ -81,6 +98,24 @@ const Editor = () => {
         }
     };
 
+    const handlePublishClick = () => {
+        if (!title || !description || !content) {
+            setIsValidationError(true);
+        } else {
+            setIsAlertOpen(true);
+        }
+    };
+
+    const onClose = () => {
+        setIsAlertOpen(false);
+        setIsSaveAlertOpen(false);
+        setIsValidationError(false);
+    };
+
+    const openFileDialog = () => {
+        fileInputRef.current?.click();
+    };
+
     return (
         <div className="container mx-auto my-10">
             <Head>
@@ -103,32 +138,115 @@ const Editor = () => {
                 <Textarea
                     value={content}
                     onChange={handleContentChange}
-                    className="w-full mb-3"
+                    className="w-full mb-5"
                     placeholder="Write your markdown here..."
                 />
+                <Button onClick={openFileDialog} className="w-full">
+                    Upload Image
+                </Button>
                 <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="w-full mb-3 p-3 border rounded-md"
+                    ref={fileInputRef}
+                    className="hidden"
                 />
                 {imageUrl && (
-                    <div className="flex">
-                        <Input value={imageUrl} isReadOnly className="w-full mb-3" />
+                    <div className="flex mt-3">
+                        <Input value={imageUrl} isReadOnly className="w-full" />
                         <Button onClick={onCopy} colorScheme='teal' className='ml-2.5'>
                             {hasCopied ? 'Copied' : 'Copy URL'}
                         </Button>
                     </div>
                 )}
-                <Button onClick={saveMemo} colorScheme='teal' mt={5}>
+                <Button onClick={handlePublishClick} colorScheme='teal' className='my-5'>
                     Publish
                 </Button>
-                <div className="mt-5">
+                <Text>Preview</Text>
+                <div className="markdown-body rounded-md border p-[30px]">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {content}
                     </ReactMarkdown>
                 </div>
             </Layout>
+
+            <AlertDialog
+                isOpen={isAlertOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+                isCentered
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Publish Memo
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            Are you sure you want to publish this memo?
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onClose}>
+                                Cancel
+                            </Button>
+                            <Button colorScheme="teal" onClick={saveMemo} ml={3}>
+                                Publish
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+
+            <AlertDialog
+                isOpen={isSaveAlertOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+                isCentered
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Memo Saved
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            Your memo has been saved successfully!
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onClose}>
+                                OK
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+
+            <AlertDialog
+                isOpen={isValidationError}
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+                isCentered
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Validation Error
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            Title, Description, and Content cannot be empty.
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onClose}>
+                                OK
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
         </div>
     );
 };
