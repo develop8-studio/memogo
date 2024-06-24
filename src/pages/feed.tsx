@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/firebase/firebaseConfig';
-import { collection, query, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, doc, getDoc, startAfter, limit } from 'firebase/firestore';
 import Link from 'next/link';
-import { Box, VStack, HStack, Avatar, Heading, Text } from '@chakra-ui/react';
+import { Box, VStack, HStack, Avatar, Heading, Text, Button } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
 
@@ -19,15 +19,24 @@ interface Memo {
 
 const Feed = () => {
     const [memos, setMemos] = useState<Memo[]>([]);
+    const [lastVisible, setLastVisible] = useState<any>(null);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [loadedMemoIds, setLoadedMemoIds] = useState<Set<string>>(new Set());
 
-    useEffect(() => {
-        const fetchMemos = async () => {
-            const q = query(collection(db, 'memos'), orderBy('createdAt', 'desc'));
-            const querySnapshot = await getDocs(q);
-            const memosData: Memo[] = [];
+    const fetchMemos = async (initial = false) => {
+        setLoading(true);
+        let q = query(collection(db, 'memos'), orderBy('createdAt', 'desc'), limit(10));
+        if (lastVisible && !initial) {
+            q = query(collection(db, 'memos'), orderBy('createdAt', 'desc'), startAfter(lastVisible), limit(10));
+        }
+        const querySnapshot = await getDocs(q);
+        const memosData: Memo[] = [];
+        const newLoadedMemoIds = new Set(loadedMemoIds);
 
-            for (const memoDoc of querySnapshot.docs) {
-                const memoId = memoDoc.id; // メモのIDを取得
+        for (const memoDoc of querySnapshot.docs) {
+            const memoId = memoDoc.id;
+            if (!newLoadedMemoIds.has(memoId)) {
+                newLoadedMemoIds.add(memoId);
                 const memoData = memoDoc.data();
                 if (memoData && memoData.userId) {
                     const userDocRef = doc(db, 'users', memoData.userId);
@@ -43,11 +52,20 @@ const Feed = () => {
                     }
                 }
             }
+        }
 
+        if (initial) {
             setMemos(memosData);
-        };
+        } else {
+            setMemos((prevMemos) => [...prevMemos, ...memosData]);
+        }
+        setLoadedMemoIds(newLoadedMemoIds);
+        setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+        setLoading(false);
+    };
 
-        fetchMemos();
+    useEffect(() => {
+        fetchMemos(true);
     }, []);
 
     return (
@@ -79,6 +97,19 @@ const Feed = () => {
                         </Box>
                     ))}
                 </VStack>
+                {loading ? (
+                    <div className='w-full flex items-center justify-center'>
+                    <Button onClick={() => fetchMemos()} isDisabled={loading} mt={5} disabled>
+                        Loading...
+                    </Button>
+                </div>
+                ) : (
+                    <div className='w-full flex items-center justify-center'>
+                        <Button onClick={() => fetchMemos()} isDisabled={loading} mt={5}>
+                            Load more...
+                        </Button>
+                    </div>
+                )}
             </Layout>
         </div>
     );
