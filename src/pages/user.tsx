@@ -113,7 +113,7 @@ const UserPage = () => {
                         )}
                         {currentUser && currentUser.uid === id && (
                             <Button className='ml-3'>
-                                <Link href="/settings/account">Edit profile</Link>
+                                <Link href="/settings">Edit profile</Link>
                             </Button>
                         )}
                     </div>
