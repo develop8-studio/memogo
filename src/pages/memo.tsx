@@ -8,7 +8,7 @@ import BookmarkButton from '../components/BookmarkButton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Head from 'next/head';
-import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea } from '@chakra-ui/react';
+import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea, Spinner } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ChevronDownIcon } from '@chakra-ui/icons';
@@ -35,6 +35,7 @@ const Memo = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editContent, setEditContent] = useState('');
+    const [loading, setLoading] = useState<boolean>(true);
     const cancelRef = useRef(null);
 
     const onClose = () => setIsOpen(false);
@@ -54,17 +55,24 @@ const Memo = () => {
 
     useEffect(() => {
         const fetchMemo = async () => {
-            if (typeof id === 'string') {
-                const docRef = doc(db, 'memos', id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const data = docSnap.data() as MemoData;
-                    setMemoData(data);
+            setLoading(true);
+            try {
+                if (typeof id === 'string') {
+                    const docRef = doc(db, 'memos', id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data() as MemoData;
+                        setMemoData(data);
+                    } else {
+                        console.log('No such document!');
+                    }
                 } else {
-                    console.log('No such document!');
+                    console.log('Invalid ID type');
                 }
-            } else {
-                console.log('Invalid ID type');
+            } catch (error) {
+                console.error('Error fetching memo:', error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchMemo();
@@ -73,13 +81,17 @@ const Memo = () => {
     useEffect(() => {
         const fetchAuthorData = async () => {
             if (memoData && memoData.userId) {
-                const userDocRef = doc(db, 'users', memoData.userId);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data() as UserData;
-                    setAuthorData(userData);
-                } else {
-                    console.log('No such user document!');
+                try {
+                    const userDocRef = doc(db, 'users', memoData.userId);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data() as UserData;
+                        setAuthorData(userData);
+                    } else {
+                        console.log('No such user document!');
+                    }
+                } catch (error) {
+                    console.error('Error fetching author data:', error);
                 }
             }
         };
@@ -110,6 +122,8 @@ const Memo = () => {
             setIsEditOpen(false);
         }
     };
+
+    if (loading) return <div className="w-full min-h-screen flex justify-center items-center"><Spinner size="xl" /></div>;
 
     return (
         <>

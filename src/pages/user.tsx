@@ -4,7 +4,7 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { Heading, Text, Button } from '@chakra-ui/react';
+import { Heading, Text, Button, Spinner } from '@chakra-ui/react';
 import Head from 'next/head';
 
 interface User {
@@ -26,70 +26,105 @@ const UserPage = () => {
     const [user, setUser] = useState<User | null>(null);
     const [memos, setMemos] = useState<Memo[]>([]);
     const [isFollowing, setIsFollowing] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
     const currentUser = auth.currentUser;
 
     useEffect(() => {
         const fetchUser = async () => {
-            if (id && typeof id === 'string') {
-                const docRef = doc(db, 'users', id);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setUser(docSnap.data() as User);
-                } else {
-                    console.log('No such user!');
+            try {
+                if (id && typeof id === 'string') {
+                    const docRef = doc(db, 'users', id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        setUser(docSnap.data() as User);
+                    } else {
+                        setError('No such user!');
+                    }
                 }
+            } catch (err) {
+                setError('Failed to fetch user data');
+                console.error(err);
             }
         };
 
         const fetchMemos = async () => {
-            if (id && typeof id === 'string') {
-                const q = query(collection(db, 'memos'), where('userId', '==', id));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
-                    setMemos(querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id } as Memo)));
-                } else {
-                    console.log('No memos found for this user.');
+            try {
+                if (id && typeof id === 'string') {
+                    const q = query(collection(db, 'memos'), where('userId', '==', id));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        setMemos(querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id } as Memo)));
+                    } else {
+                        setError('No memos found for this user.');
+                    }
                 }
+            } catch (err) {
+                setError('Failed to fetch memos');
+                console.error(err);
             }
         };
 
         const checkFollowingStatus = async () => {
-            if (currentUser && id && typeof id === 'string') {
-                const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid), where('followingId', '==', id));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
-                    setIsFollowing(true);
+            try {
+                if (currentUser && id && typeof id === 'string') {
+                    const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid), where('followingId', '==', id));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        setIsFollowing(true);
+                    }
                 }
+            } catch (err) {
+                setError('Failed to check following status');
+                console.error(err);
             }
         };
 
-        fetchUser();
-        fetchMemos();
-        checkFollowingStatus();
+        const fetchData = async () => {
+            setLoading(true);
+            await fetchUser();
+            await fetchMemos();
+            await checkFollowingStatus();
+            setLoading(false);
+        };
+
+        fetchData();
     }, [id, currentUser]);
 
     const handleFollow = async () => {
-        if (currentUser && id && typeof id === 'string') {
-            await addDoc(collection(db, 'follows'), {
-                followerId: currentUser.uid,
-                followingId: id
-            });
-            setIsFollowing(true);
+        try {
+            if (currentUser && id && typeof id === 'string') {
+                await addDoc(collection(db, 'follows'), {
+                    followerId: currentUser.uid,
+                    followingId: id
+                });
+                setIsFollowing(true);
+            }
+        } catch (err) {
+            setError('Failed to follow user');
+            console.error(err);
         }
     };
 
     const handleUnfollow = async () => {
-        if (currentUser && id && typeof id === 'string') {
-            const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid), where('followingId', '==', id));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach(async (doc) => {
-                await deleteDoc(doc.ref);
-            });
-            setIsFollowing(false);
+        try {
+            if (currentUser && id && typeof id === 'string') {
+                const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid), where('followingId', '==', id));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(async (doc) => {
+                    await deleteDoc(doc.ref);
+                });
+                setIsFollowing(false);
+            }
+        } catch (err) {
+            setError('Failed to unfollow user');
+            console.error(err);
         }
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (loading) return <div className=" w-full min-h-screen flex justify-center items-center h-screen"><Spinner size="xl" /></div>;
+    if (error) return <div className="text-red-500">{error}</div>;
+    if (!user) return <div>No user found</div>;
 
     return (
         <div className="container mx-auto my-10">
@@ -120,8 +155,8 @@ const UserPage = () => {
                 </div>
                 <div className="mt-[30px]">
                     <ul className="space-y-3">
-                        {memos.map((memo, index) => (
-                            <li key={index} className="p-[15px] border rounded-md hover:bg-slate-50 transition-colors">
+                        {memos.map((memo) => (
+                            <li key={memo.uid} className="p-[15px] border rounded-md hover:bg-slate-50 transition-colors">
                                 <Link href={`/memo?id=${memo.uid}`}>
                                     <h2 className="text-lg font-bold">{memo.title}</h2>
                                     <p>{memo.description}</p>

@@ -5,7 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
-import { Heading } from '@chakra-ui/react';
+import { Heading, Spinner } from '@chakra-ui/react';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 
 interface Memo {
@@ -47,9 +47,9 @@ const BookmarkedMemos = () => {
                 setLoading(false);
             }
         });
-    }, [auth]);
+    }, []);
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div className="w-full min-h-screen flex justify-center items-center"><Spinner size="xl" /></div>;
 
     return (
         <div className="container mx-auto my-10">

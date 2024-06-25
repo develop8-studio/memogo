@@ -35,6 +35,7 @@ const Settings = () => {
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
     const [isCropping, setIsCropping] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const {
@@ -62,6 +63,7 @@ const Settings = () => {
                     setBio(userData.bio);
                     setPhotoURL(userData.photoURL || '');
                 }
+                setLoading(false);
             }
         };
 
@@ -134,7 +136,7 @@ const Settings = () => {
         onDeleteClose();
     };
 
-    if (!user) return <div>Loading...</div>;
+    if (loading) return <div className="w-full min-h-screen flex justify-center items-center"><Spinner size="xl" /></div>;
 
     return (
         <div className="container mx-auto my-10">

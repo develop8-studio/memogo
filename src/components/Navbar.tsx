@@ -1,88 +1,137 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { auth, db } from '@/firebase/firebaseConfig';
+import React, { useState, useEffect } from "react";
+import { HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
+import Link from "next/link";
+import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button, Divider, Input } from "@chakra-ui/react";
-import {
-    Drawer,
-    DrawerBody,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerOverlay,
-    DrawerContent,
-    DrawerCloseButton,
-} from '@chakra-ui/react'
-import { useDisclosure } from '@chakra-ui/react';
+import { useRouter } from 'next/router';
+import { Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay } from '@chakra-ui/react';
+import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaFire } from 'react-icons/fa';
 
-const Navbar = () => {
-    const [user, setUser] = useState<User | null>(null);
-    const [photoURL, setPhotoURL] = useState<string>('/default-avatar.png');
+interface MenuItemProps {
+    icon: React.ReactNode;
+    text: string;
+    href?: string; // href is optional
+    onClick?: () => void; // Optional onClick handler
+}
+
+const Navbar: React.FC = () => {
     const router = useRouter();
-    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const onClose = () => setIsAlertOpen(false);
+    const cancelRef = React.useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setUser(user);
-                const userDoc = await getDoc(doc(db, 'users', user.uid));
-                if (userDoc.exists()) {
-                    setPhotoURL(userDoc.data().photoURL || '/default-avatar.png');
-                }
             } else {
                 setUser(null);
-                router.push('/login'); // ログインしていない場合は /login にリダイレクト
             }
         });
 
         return () => unsubscribe();
-    }, [router]);
+    }, []);
+
+    const toggleMenu = () => {
+        setIsOpen(!isOpen);
+    };
 
     const handleLogout = async () => {
+        setIsAlertOpen(false);
         await signOut(auth);
         router.push('/login');
     };
 
+    const handleLogoutClick = () => {
+        setIsAlertOpen(true);
+    };
+
+    const menuItems: MenuItemProps[] = [
+        { icon: <FaHome className="text-lg" />, text: "ホーム", href: "/" },
+        { icon: <FaFire className="text-lg" />, text: "フィード", href: "/feed" },
+        { icon: <FaUser className="text-lg" />, text: "プロフィール", href: user ? `/user?id=${user.uid}` : undefined },
+        { icon: <FaUserFriends className="text-lg" />, text: "フォロー中", href: "/following" },
+        { icon: <FaBookmark className="text-lg" />, text: "ブックマーク", href: "/bookmarks" },
+        { icon: <FaPen className="text-lg" />, text: "エディター", href: "/editor" },
+        { icon: <FaCog className="text-lg" />, text: "設定", href: "/settings" },
+        { icon: <FaSignOutAlt className="text-lg" />, text: "ログアウト", onClick: handleLogoutClick },
+    ];
+
     return (
         <>
-            {/* <nav>
-                <div className="container mx-auto flex justify-between">
-                    <Link href="/">
-                        <Image src="/memogo.png" alt="MemoGo Logo" width={100} height={100} className='mt-1.5 w-[40px] h-[40px] rounded-md' />
-                    </Link>
+            <div className="fixed top-0 w-full bg-teal-500 text-white border-b border-teal-500 z-50 md:hidden">
+                <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
+                    <a href="/" className="font-bold">
+                        ロゴ
+                    </a>
+                    <button
+                        onClick={toggleMenu}
+                        className="p-2 md:hidden"
+                        aria-label="Toggle Navigation"
+                    >
+                        {isOpen ? <CloseIcon /> : <HamburgerIcon />}
+                    </button>
                 </div>
-            </nav> */}
-            <nav className="border-b p-2.5">
-                <div className="container mx-auto flex justify-between items-center space-x-2.5">
-                    <Image src="/memogo.png" alt="Memogo Logo" width={100} height={100} className='w-[45px] h-[40px]' onClick={onOpen} />
-                    <Input placeholder="検索したいワードを入力..." />
-                    <Button colorScheme="teal">検索</Button>
-                    {user && (
-                        <div className="flex items-center">
-                            <Link href="/settings/account"><Image src={photoURL} alt="User Avatar" width={40} height={40} className='w-[45px] h-[40px] rounded-full border' /></Link>
-                            {/* <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded ml-2">
-                                Logout
-                            </button> */}
+                {isOpen && (
+                    <div className="md:hidden">
+                        <div className="bg-teal-500 px-4 pt-2 pb-4">
+                            {menuItems.map((item, index) => (
+                                <MenuItem key={index} icon={item.icon} text={item.text} href={item.href} onClick={item.onClick} />
+                            ))}
                         </div>
-                    )}
-                </div>
-            </nav>
-            <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
-                <DrawerOverlay />
-                <DrawerContent>
-                <DrawerHeader borderBottomWidth='1px'><Link href="/"><Image src="/memogo.png" alt='' width={100} height={100} className="w-10" /></Link></DrawerHeader>
-                <DrawerBody>
-                    <div className="flex flex-col space-y-2.5 my-2.5">
-                        <Link href="/editor" className='bg-slate-50 py-[10px] px-[15px] rounded-full hover:bg-slate-100 transition-colors'>Editor</Link>
-                        <Link href="/bookmarks" className='bg-slate-50 py-[10px] px-[15px] rounded-full hover:bg-slate-100 transition-colors'>Bookmarks</Link>
                     </div>
-                </DrawerBody>
-                </DrawerContent>
-            </Drawer>
+                )}
+            </div>
+
+            <AlertDialog
+                isOpen={isAlertOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+                isCentered
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            ログアウト
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            ログアウトしてもよろしいですか？
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={onClose}>
+                                キャンセル
+                            </Button>
+                            <Button colorScheme="blue" onClick={handleLogout} ml={3}>
+                                ログアウト
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
         </>
     );
+};
+
+const MenuItem: React.FC<MenuItemProps> = ({ icon, text, href, onClick }) => {
+    if (href) {
+        return (
+            <Link href={href} className="block py-2 flex items-center">
+                {icon}
+                <span className="ml-2">{text}</span>
+            </Link>
+        );
+    } else {
+        return (
+            <button className="block py-2 flex items-center" onClick={onClick}>
+                {icon}
+                <span className="ml-2">{text}</span>
+            </button>
+        );
+    }
 };
 
 export default Navbar;

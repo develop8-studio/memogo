@@ -18,8 +18,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="apple-touch-icon" href="/memogo.png" />
       </Head>
       {/* <Navbar /> */}
-      <div className="flex w-full">
+      <div className="flex w-full pt-[60px] md:pt-0">
         <SideBar />
+        <Navbar />
         <Component {...pageProps} />
       </div>
     </ChakraProvider>

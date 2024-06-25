@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import Link from 'next/link';
-import { Heading, Text, Avatar, Box, VStack, HStack } from '@chakra-ui/react';
+import { Heading, Text, Avatar, Box, VStack, HStack, Spinner } from '@chakra-ui/react';
 import Head from 'next/head';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
@@ -17,32 +17,41 @@ interface User {
 const Following = () => {
     useAuthRedirect();
     const [following, setFollowing] = useState<User[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
     const currentUser = auth.currentUser;
 
     useEffect(() => {
         const fetchFollowing = async () => {
             if (currentUser) {
-                const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid));
-                const querySnapshot = await getDocs(q);
-                const followedUsers: User[] = [];
+                try {
+                    const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid));
+                    const querySnapshot = await getDocs(q);
+                    const followedUsers: User[] = [];
 
-                for (const docSnap of querySnapshot.docs) {
-                    const userId = docSnap.data().followingId;
-                    const userDocRef = doc(db, 'users', userId);
-                    const userDoc = await getDoc(userDocRef);
-                    if (userDoc.exists()) {
-                        followedUsers.push({ uid: userDoc.id, ...userDoc.data() } as User);
+                    for (const docSnap of querySnapshot.docs) {
+                        const userId = docSnap.data().followingId;
+                        const userDocRef = doc(db, 'users', userId);
+                        const userDoc = await getDoc(userDocRef);
+                        if (userDoc.exists()) {
+                            followedUsers.push({ uid: userDoc.id, ...userDoc.data() } as User);
+                        }
                     }
-                }
 
-                setFollowing(followedUsers);
+                    setFollowing(followedUsers);
+                } catch (error) {
+                    console.error('Error fetching following users:', error);
+                } finally {
+                    setLoading(false);
+                }
             }
         };
 
         fetchFollowing();
     }, [currentUser]);
 
-    if (!currentUser) return <div>Loading...</div>;
+    if (loading) {
+        return <div className="w-full min-h-screen flex justify-center items-center"><Spinner size="xl" /></div>;
+    }
 
     return (
         <div className="container mx-auto my-10">
