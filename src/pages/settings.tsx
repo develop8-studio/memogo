@@ -18,8 +18,9 @@ import {
     AlertDialogOverlay,
     AlertDialogCloseButton,
     useDisclosure,
-} from '@chakra-ui/react'
-import getCroppedImg from "@/utils/cropImage"
+} from '@chakra-ui/react';
+import { FaUserCircle } from 'react-icons/fa';
+import getCroppedImg from "@/utils/cropImage";
 
 const Settings = () => {
     useAuthRedirect();
@@ -144,11 +145,17 @@ const Settings = () => {
                 <div>
                     <div className="contents lg:flex w-full">
                         <div className='w-[25%] sm:w-[20%] lg:w-[12.5%]'>
-                            {photoURL && (
+                            {photoURL ? (
                                 <Image
                                     src={photoURL}
                                     alt="Profile Picture"
                                     className="w-auto h-auto rounded-full cursor-pointer"
+                                    onClick={() => fileInput.current?.click()}
+                                />
+                            ) : (
+                                <FaUserCircle
+                                    className="w-auto h-auto rounded-full cursor-pointer text-slate-500"
+                                    size="6em"
                                     onClick={() => fileInput.current?.click()}
                                 />
                             )}
@@ -177,7 +184,7 @@ const Settings = () => {
                     />
                     <div className='flex space-x-3 w-full sm:w-fit-content'>
                         <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full sm:w-auto">
-                            {uploading && <Spinner size="sm" mr={2} />}
+                            {uploading && <Spinner size="sm" className="mr-2" />}
                             {uploading ? 'Uploading...' : 'Update Profile'}
                         </Button>
                         <Button onClick={confirmDeleteAccount} colorScheme='red' className="w-full sm:w-auto">

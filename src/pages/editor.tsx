@@ -16,7 +16,8 @@ import {
     AlertDialogHeader,
     AlertDialogContent,
     AlertDialogOverlay,
-    Text
+    Text,
+    Spinner
 } from '@chakra-ui/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -35,6 +36,7 @@ const Editor = () => {
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [isSaveAlertOpen, setIsSaveAlertOpen] = useState(false);
     const [isValidationError, setIsValidationError] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const cancelRef = useRef<HTMLButtonElement>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -92,9 +94,11 @@ const Editor = () => {
         if (e.target.files && e.target.files[0]) {
             const image = e.target.files[0];
             const imageRef = ref(storage, `images/${uuidv4()}`);
+            setIsUploading(true);
             await uploadBytes(imageRef, image);
             const url = await getDownloadURL(imageRef);
             setImageUrl(url);
+            setIsUploading(false);
         }
     };
 
@@ -140,9 +144,10 @@ const Editor = () => {
                     onChange={handleContentChange}
                     className="w-full mb-5"
                     placeholder="Write your markdown here..."
+                    height="200px"
                 />
-                <Button onClick={openFileDialog} className="w-full">
-                    Upload Image
+                <Button onClick={openFileDialog} className="w-full" disabled={isUploading}>
+                    {isUploading ? <><Spinner size="sm" className="mr-2" />Uploading...</> : 'Upload Image'}
                 </Button>
                 <input
                     type="file"

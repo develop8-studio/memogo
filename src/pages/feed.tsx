@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/firebase/firebaseConfig';
 import { collection, query, getDocs, orderBy, doc, getDoc, startAfter, limit } from 'firebase/firestore';
 import Link from 'next/link';
-import { Box, VStack, HStack, Avatar, Heading, Text, Button } from '@chakra-ui/react';
+import { Box, VStack, HStack, Avatar, Heading, Text, Button, Spinner } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
 
@@ -68,6 +68,10 @@ const Feed = () => {
         fetchMemos(true);
     }, []);
 
+    const truncateDescription = (description: string) => {
+        return description.length > 100 ? description.substring(0, 100) + '...' : description;
+    };
+
     return (
         <div className="container mx-auto my-10">
             <Head>
@@ -91,25 +95,23 @@ const Feed = () => {
                             <Box className="mt-[15px]">
                                 <Link href={`/memo?id=${memo.id}`} passHref>
                                     <Heading size="md">{memo.title}</Heading>
-                                    <Text className="mt-[7.5px]">{memo.description}</Text>
+                                    <Text className="mt-[7.5px]">{truncateDescription(memo.description)}</Text>
                                 </Link>
                             </Box>
                         </Box>
                     ))}
                 </VStack>
-                {loading ? (
-                    <div className='w-full flex items-center justify-center'>
-                    <Button onClick={() => fetchMemos()} isDisabled={loading} mt={5} disabled>
-                        Loading...
-                    </Button>
-                </div>
-                ) : (
-                    <div className='w-full flex items-center justify-center'>
-                        <Button onClick={() => fetchMemos()} isDisabled={loading} mt={5}>
+                <div className='w-full flex items-center justify-center'>
+                    {loading ? (
+                        <Button onClick={() => fetchMemos()} isDisabled={loading} className="mt-5">
+                            <Spinner size="sm" className='mr-2' />Loading...
+                        </Button>
+                    ) : (
+                        <Button onClick={() => fetchMemos()} isDisabled={loading} className="mt-5">
                             Load more...
                         </Button>
-                    </div>
-                )}
+                    )}
+                </div>
             </Layout>
         </div>
     );

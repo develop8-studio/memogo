@@ -1,14 +1,14 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { db, auth } from '@/firebase/firebaseConfig';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import LikeButton from '../components/LikeButton';
 import Comments from '../components/Comments';
 import BookmarkButton from '../components/BookmarkButton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Head from 'next/head';
-import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack } from '@chakra-ui/react';
+import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ChevronDownIcon } from '@chakra-ui/icons';
@@ -32,6 +32,13 @@ const Memo = () => {
     const [memoData, setMemoData] = useState<MemoData | null>(null);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [authorData, setAuthorData] = useState<UserData | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [editContent, setEditContent] = useState('');
+    const cancelRef = useRef(null);
+
+    const onClose = () => setIsOpen(false);
+    const onEditClose = () => setIsEditOpen(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -83,8 +90,24 @@ const Memo = () => {
         if (typeof id === 'string') {
             const docRef = doc(db, 'memos', id);
             await deleteDoc(docRef);
-            alert('Memo deleted!');
-            router.push('/feed'); // メモ削除後にフィードページにリダイレクト
+            setIsOpen(false);
+            router.push('/feed');
+        }
+    };
+
+    const openEditDialog = () => {
+        if (memoData) {
+            setEditContent(memoData.content);
+            setIsEditOpen(true);
+        }
+    };
+
+    const saveEditedContent = async () => {
+        if (typeof id === 'string' && memoData) {
+            const docRef = doc(db, 'memos', id);
+            await updateDoc(docRef, { content: editContent });
+            setMemoData({ ...memoData, content: editContent });
+            setIsEditOpen(false);
         }
     };
 
@@ -98,11 +121,11 @@ const Memo = () => {
             <div className='container mx-auto my-10'>
                 {memoData && (
                     <Layout>
-                        <div className="flex flex-col mb-5">
+                        <div className="flex flex-col mb-5 justify-center text-center">
                             <Heading className="mb-2.5">{memoData.title}</Heading>
                             <Text>{memoData.description}</Text>
-                            {authorData && (
-                                <HStack spacing={3} className="mt-5 border p-1.5 rounded-md w-full">
+                            {memoData.userId !== currentUserId && authorData && (
+                                <HStack spacing={3} className="mt-5 border p-1.5 rounded-md w-full mb-10">
                                     <Link href={`/user?id=${memoData.userId}`} passHref>
                                         <Avatar src={authorData.photoURL} size="md" />
                                     </Link>
@@ -115,15 +138,72 @@ const Memo = () => {
                             )}
                         </div>
                         {memoData.userId === currentUserId && (
-                            <div className='mb-10 flex justify-end'>
+                            <div className='mt-5 mb-10 flex justify-end'>
                                 <Menu>
                                     <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
                                         Details
                                     </MenuButton>
                                     <MenuList>
-                                        <MenuItem onClick={deleteMemo}>Delete</MenuItem>
+                                        <MenuItem onClick={openEditDialog}>Edit</MenuItem>
+                                        <MenuItem onClick={() => setIsOpen(true)}>Delete</MenuItem>
                                     </MenuList>
                                 </Menu>
+                                <AlertDialog
+                                    isOpen={isOpen}
+                                    leastDestructiveRef={cancelRef}
+                                    onClose={onClose}
+                                    isCentered
+                                >
+                                    <AlertDialogOverlay>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                                                Delete Memo
+                                            </AlertDialogHeader>
+                                            <AlertDialogBody>
+                                                Are you sure? You can't undo this action afterwards.
+                                            </AlertDialogBody>
+                                            <AlertDialogFooter>
+                                                <Button ref={cancelRef} onClick={onClose}>
+                                                    Cancel
+                                                </Button>
+                                                <Button colorScheme='red' onClick={deleteMemo} ml={3}>
+                                                    Delete
+                                                </Button>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialogOverlay>
+                                </AlertDialog>
+                                <AlertDialog
+                                    isOpen={isEditOpen}
+                                    leastDestructiveRef={cancelRef}
+                                    onClose={onEditClose}
+                                    isCentered
+                                >
+                                    <AlertDialogOverlay>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                                                Edit Memo
+                                            </AlertDialogHeader>
+                                            <AlertDialogBody>
+                                                <Textarea
+                                                    value={editContent}
+                                                    onChange={(e) => setEditContent(e.target.value)}
+                                                    placeholder="Edit your memo content here..."
+                                                    size="sm"
+                                                    height="250px"
+                                                />
+                                            </AlertDialogBody>
+                                            <AlertDialogFooter>
+                                                <Button ref={cancelRef} onClick={onEditClose}>
+                                                    Cancel
+                                                </Button>
+                                                <Button colorScheme='blue' onClick={saveEditedContent} ml={3}>
+                                                    Save
+                                                </Button>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialogOverlay>
+                                </AlertDialog>
                             </div>
                         )}
                     </Layout>
