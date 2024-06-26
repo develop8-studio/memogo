@@ -64,7 +64,7 @@ const MobileNav: FC = () => {
       <Box className="fixed top-0 w-full z-50 md:hidden">
         <Flex
           as="nav"
-          className="transition-all shadow-sm min-h-[60px] py-1.5 px-3 text-gray-600 bg-white justify-between items-center"
+          className="transition-all min-h-[60px] py-1.5 px-3 text-gray-600 bg-white justify-between items-center"
         >
           <IconButton
             size="md"
@@ -76,7 +76,7 @@ const MobileNav: FC = () => {
         </Flex>
 
         {isOpen ? (
-          <Box className="bg-white shadow-sm pb-3">
+          <Box className="bg-white shadow-sm pb-3 h-screen">
             <Stack as="nav" spacing={3}>
               <MobileNavItem icon={FiHome} label="Home" href="/" />
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
@@ -128,4 +128,4 @@ const MobileNav: FC = () => {
   );
 };
 
-export default MobileNav;2
+export default MobileNav;
