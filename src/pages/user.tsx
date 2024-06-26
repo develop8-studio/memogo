@@ -130,24 +130,24 @@ const UserPage = () => {
         <div className="container mx-auto my-10">
             <Head><title>{user.displayName}</title></Head>
             <Layout>
-                <div className="flex items-center">
+                <div className="contents lg:flex items-center">
                     <img src={user.photoURL} alt={user.displayName} className="w-20 h-20 rounded-full mr-3 border" />
-                    <div>
+                    <div className='mt-3 lg:mt-0'>
                         <Heading size="md">{user.displayName}</Heading>
                         <Text className="text-slate-500 lg:whitespace-pre-line">{user.bio}</Text>
                     </div>
-                    <div className="ml-auto">
+                    <div className="ml-auto mt-3 lg:mt-0">
                         {currentUser && currentUser.uid !== id && (
                             <Button
                                 onClick={isFollowing ? handleUnfollow : handleFollow}
                                 colorScheme={isFollowing ? 'red' : 'blue'}
-                                className='ml-3'
+                                className='lg:ml-3'
                             >
                                 {isFollowing ? 'Unfollow' : 'Follow'}
                             </Button>
                         )}
                         {currentUser && currentUser.uid === id && (
-                            <Button className='ml-3'>
+                            <Button className='lg:ml-3'>
                                 <Link href="/settings">Edit profile</Link>
                             </Button>
                         )}
@@ -159,7 +159,7 @@ const UserPage = () => {
                             <li key={memo.uid} className="p-[15px] border rounded-md hover:bg-slate-50 transition-colors">
                                 <Link href={`/memo?id=${memo.uid}`}>
                                     <h2 className="text-lg font-bold">{memo.title}</h2>
-                                    <p>{memo.description}</p>
+                                    <p>{memo.description.length > 100 ? `${memo.description.substring(0, 100)}...` : memo.description}</p>
                                 </Link>
                             </li>
                         ))}

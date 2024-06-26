@@ -5,6 +5,7 @@ import { ChakraProvider } from '@chakra-ui/react'
 import Head from "next/head"
 // import Navbar from "@/components/Navbar"
 import Image from "next/image"
+import MobileNav from "@/components/MobileNav"
 import SideBar from "@/components/SideBar"
 import 'github-markdown-css/github-markdown.css'
 import '@/styles/md.css'
@@ -20,6 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
       {/* <Navbar /> */}
       <div className="flex w-full pt-[60px] md:pt-0">
         <SideBar />
+        <MobileNav />
         {/* <Navbar /> */}
         <Component {...pageProps} />
       </div>

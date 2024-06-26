@@ -58,16 +58,20 @@ const BookmarkedMemos = () => {
             </Head>
             <Layout>
                 <Heading size="md" className='mb-5'>Bookmarks</Heading>
-                {memos.length > 0 ? (
-                    memos.map((memo, index) => (
-                        <Link href={`/memo?id=${memo.uid}`} key={index} className="block mb-3 p-[15px] border rounded-md hover:bg-slate-50 transition-colors">
-                            <h2 className="text-lg font-bold">{memo.title}</h2>
-                            <p>{memo.description}</p>
-                        </Link>
-                    ))
-                ) : (
-                    <p>No bookmarked memos found.</p>
-                )}
+                <ul className="space-y-3">
+                    {memos.length > 0 ? (
+                        memos.map((memo, index) => (
+                            <li key={memo.uid} className="p-[15px] border rounded-md hover:bg-slate-50 transition-colors">
+                                <Link href={`/memo?id=${memo.uid}`}>
+                                    <h2 className="text-lg font-bold">{memo.title}</h2>
+                                    <p>{memo.description.length > 100 ? `${memo.description.substring(0, 100)}...` : memo.description}</p>
+                                </Link>
+                            </li>
+                        ))
+                    ) : (
+                        <p>No bookmarked memos found.</p>
+                    )}
+                </ul>
             </Layout>
         </div>
     );
