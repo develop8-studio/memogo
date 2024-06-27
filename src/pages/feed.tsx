@@ -100,7 +100,7 @@ const Feed = () => {
                                                     <Link href={`/user?id=${memo.userId}`} passHref>
                                                         <Heading size='sm'>{memo.displayName}</Heading>
                                                     </Link>
-                                                    <Text>{memo.createdAt?.toDate().toLocaleString()}</Text>
+                                                    <Text className="text-gray-500 text-sm mt-1">{memo.createdAt?.toDate().toLocaleString()}</Text>
                                                 </Box>
                                             </Flex>
                                         </Flex>
