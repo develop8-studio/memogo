@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Box, Divider, Flex, IconButton, Stack, useDisclosure, Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
-import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash } from 'react-icons/fi';
+import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch } from 'react-icons/fi';
 import { IconType } from 'react-icons';
 import { FaSignOutAlt } from 'react-icons/fa';
 import { auth } from '@/firebase/firebaseConfig';
@@ -74,12 +74,12 @@ const MobileNav: FC = () => {
             className="bg-transparent ml-auto"
           />
         </Flex>
-
         {isOpen ? (
           <Box className="bg-white shadow-sm pb-3 h-screen">
             <Stack as="nav" spacing={3}>
               <MobileNavItem icon={FiHome} label="Home" href="/" />
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
+              <MobileNavItem icon={FiSearch} label="Search" href="/search" />
               {user && <MobileNavItem icon={FiUser} label="Profile" href={`/user?id=${user.uid}`} />}
               <MobileNavItem icon={FiUsers} label="Following" href="/following" />
               <MobileNavItem icon={FiBookmark} label="Bookmarks" href="/bookmarks" />

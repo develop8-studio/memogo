@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaFire, FaHashtag } from 'react-icons/fa';
+import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaFire, FaHashtag, FaSearch } from 'react-icons/fa';
 import Link from 'next/link';
 import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
@@ -47,6 +47,7 @@ const SideBar: React.FC = () => {
                 <div className="flex-grow">
                     <MenuItem icon={<FaHome className="text-lg" />} href="/" />
                     <MenuItem icon={<FaHashtag className="text-lg" />} href="/feed" />
+                    <MenuItem icon={<FaSearch className="text-lg" />} href="/search" />
                     {user && <MenuItem icon={<FaUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
                     <MenuItem icon={<FaUserFriends className="text-lg" />} href="/following" />
                     <MenuItem icon={<FaBookmark className="text-lg" />} href="/bookmarks" />
