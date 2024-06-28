@@ -1,6 +1,6 @@
 import React, { FC, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Box, Divider, Flex, IconButton, Stack, useDisclosure, Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay } from '@chakra-ui/react';
+import { Box, Divider, Flex, IconButton, Stack, useDisclosure, Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Image } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch } from 'react-icons/fi';
 import { IconType } from 'react-icons';
@@ -18,7 +18,7 @@ interface MobileNavItemProps {
 const MobileNavItem: FC<MobileNavItemProps> = ({ icon, label, href }) => {
   return (
     <Link href={href}>
-      <Flex className="transition-colors hover:bg-teal-500 hover:text-white cursor-pointer rounded-md mx-2.5 p-2.5 role-group text-center items-center">
+      <Flex className="transition-colors hover:bg-emerald-500 hover:text-white cursor-pointer rounded-md mx-2.5 p-2.5 role-group text-center items-center">
         {icon && (
           <Box className="mr-3 text-base">
             {React.createElement(icon)}
@@ -64,8 +64,9 @@ const MobileNav: FC = () => {
       <Box className="fixed top-0 w-full z-50 md:hidden">
         <Flex
           as="nav"
-          className="transition-all min-h-[60px] py-1.5 px-3 text-gray-600 bg-white justify-between items-center"
+          className="transition-all min-h-[60px] py-1.5 px-3 text-gray-600 bg-white justify-between items-center border-b"
         >
+          <Image src="/memogo-header-logo.png" alt='MemoGo' className="w-[100px]" />
           <IconButton
             size="md"
             icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
@@ -75,7 +76,7 @@ const MobileNav: FC = () => {
           />
         </Flex>
         {isOpen ? (
-          <Box className="bg-white shadow-sm pb-3 h-screen">
+          <Box className="bg-white shadow-sm h-screen mt-3">
             <Stack as="nav" spacing={3}>
               <MobileNavItem icon={FiHome} label="Home" href="/" />
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
@@ -88,7 +89,7 @@ const MobileNav: FC = () => {
             </Stack>
             <Divider className='my-3' />
             <Stack as="nav" spacing={3}>
-              <button onClick={handleLogoutClick} className="transition-colors hover:bg-teal-500 hover:text-white cursor-pointer rounded-md mx-2.5 p-2.5 role-group text-center items-center flex">
+              <button onClick={handleLogoutClick} className="transition-colors hover:bg-emerald-500 hover:text-white cursor-pointer rounded-md mx-2.5 p-2.5 role-group text-center items-center flex">
                 <Box className="mr-3 text-base">
                   <FiLogOut />
                 </Box>
