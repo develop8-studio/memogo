@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaFire, FaHashtag, FaSearch } from 'react-icons/fa';
+import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaHashtag, FaSearch, FaSignInAlt } from 'react-icons/fa';
 import Link from 'next/link';
 import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
@@ -49,13 +49,14 @@ const SideBar: React.FC = () => {
                     <MenuItem icon={<FaHashtag className="text-lg" />} href="/feed" />
                     <MenuItem icon={<FaSearch className="text-lg" />} href="/search" />
                     {user && <MenuItem icon={<FaUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
-                    <MenuItem icon={<FaUserFriends className="text-lg" />} href="/following" />
-                    <MenuItem icon={<FaBookmark className="text-lg" />} href="/bookmarks" />
-                    <MenuItem icon={<FaPen className="text-lg" />} href="/editor" />
-                    <MenuItem icon={<FaCog className="text-lg" />} href="/settings" />
+                    {user && <MenuItem icon={<FaUserFriends className="text-lg" />} href='/following' />}
+                    {user && <MenuItem icon={<FaBookmark className="text-lg" />} href='/bookmarks' />}
+                    {user && <MenuItem icon={<FaPen className="text-lg" />} href='/editor' />}
+                    {user && <MenuItem icon={<FaCog className="text-lg" />} href='/settings' />}
                 </div>
                 <div>
-                    <MenuItem icon={<FaSignOutAlt className="text-lg" />} onClick={handleLogoutClick} />
+                    {!user && <MenuItem icon={<FaSignInAlt className="text-lg" />} href='/login' />}
+                    {user && <MenuItem icon={<FaSignOutAlt className="text-lg" />} onClick={handleLogoutClick} />}
                 </div>
             </div>
 

@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { deleteUser } from 'firebase/auth';
+import { deleteUser, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner } from '@chakra-ui/react';
+import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 import Head from 'next/head';
@@ -19,7 +19,7 @@ import {
     AlertDialogCloseButton,
     useDisclosure,
 } from '@chakra-ui/react';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaGoogle, FaUserCircle } from 'react-icons/fa';
 import getCroppedImg from "@/utils/cropImage";
 
 const Settings = () => {
@@ -36,6 +36,7 @@ const Settings = () => {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
     const [isCropping, setIsCropping] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [newPassword, setNewPassword] = useState('');
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const {
@@ -87,13 +88,11 @@ const Settings = () => {
             if (file && croppedAreaPixels && currentUser) {
                 const croppedImg = await getCroppedImg(URL.createObjectURL(file), croppedAreaPixels);
 
-                // 画像を即座にアップロードしてURLを取得
                 const fileRef = ref(storage, `profilePictures/${currentUser.uid}/profile.jpg`);
                 setUploading(true);
                 await uploadBytes(fileRef, croppedImg);
                 const photoURL = await getDownloadURL(fileRef);
 
-                // プロファイルを更新
                 const docRef = doc(db, 'users', currentUser.uid);
                 await updateDoc(docRef, { photoURL });
 
@@ -116,8 +115,20 @@ const Settings = () => {
             };
 
             await updateDoc(docRef, updatedData);
-            setDialogMessage('Profile updated!');
+
+            if (newPassword) {
+                try {
+                    await updatePassword(currentUser, newPassword);
+                    setDialogMessage('Profile and password updated successfully!');
+                } catch (error) {
+                    console.error(error);
+                    setDialogMessage('Profile updated, but failed to update password.');
+                }
+            } else {
+                setDialogMessage('Profile updated!');
+            }
             onOpen();
+            setNewPassword('');
         }
     };
 
@@ -136,6 +147,33 @@ const Settings = () => {
         onDeleteClose();
     };
 
+    const linkGoogleAccount = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            await signInWithPopup(auth, provider);
+            setDialogMessage('Google account linked!');
+            onOpen();
+        } catch (error) {
+            console.error(error);
+            setDialogMessage('Failed to link Google account!');
+            onOpen();
+        }
+    };
+
+    const resetPassword = async () => {
+        if (currentUser?.email) {
+            try {
+                await sendPasswordResetEmail(auth, currentUser.email);
+                setDialogMessage('Password reset email sent!');
+                onOpen();
+            } catch (error) {
+                console.error(error);
+                setDialogMessage('Failed to send password reset email!');
+                onOpen();
+            }
+        }
+    };
+
     if (loading) return <div className="w-full min-h-screen flex justify-center items-center"><Spinner size="xl" /></div>;
 
     return (
@@ -145,24 +183,22 @@ const Settings = () => {
             </Head>
             <Layout>
                 <div>
-                    <div className="contents lg:flex w-full">
-                        <div className='w-[25%] sm:w-[20%] lg:w-[12.5%]'>
-                            {photoURL ? (
-                                <Image
-                                    src={photoURL}
-                                    alt="Profile Picture"
-                                    className="w-auto h-auto rounded-full cursor-pointer"
-                                    onClick={() => fileInput.current?.click()}
-                                />
+                    <div className="flex flex-col lg:flex-row  w-full rounded-md border p-5">
+                        <div className='w-fit'>
+                            {/* {photoURL ? (
+                                <>
+                                    <Avatar name={displayName} src={photoURL} size="lg" className='cursor-pointer' onClick={() => fileInput.current?.click()} />
+                                </>
                             ) : (
                                 <FaUserCircle
                                     className="w-auto h-auto rounded-full cursor-pointer text-slate-500"
                                     size="6em"
                                     onClick={() => fileInput.current?.click()}
                                 />
-                            )}
+                            )} */}
+                            <Avatar name={displayName} src={photoURL} size="lg" className='cursor-pointer' onClick={() => fileInput.current?.click()} />
                         </div>
-                        <div className="w-[87.5%] mt-3 lg:mt-0 lg:ml-5">
+                        <div className='w-full lg:ml-5 mt-3 lg:mt-0'>
                             <Text className="mb-1">Name</Text>
                             <Input
                                 type="text"
@@ -174,8 +210,19 @@ const Settings = () => {
                             <Textarea
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
+                                className="w-full mb-3"
+                            />
+                            <Text className="mb-1">New Password</Text>
+                            <Input
+                                type="password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
                                 className="w-full mb-5"
                             />
+                            <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full md:w-auto">
+                                {uploading && <Spinner size="sm" className="mr-2.5" />}
+                                {uploading ? 'Uploading...' : 'Update Profile'}
+                            </Button>
                         </div>
                     </div>
                     <input
@@ -184,12 +231,26 @@ const Settings = () => {
                         ref={fileInput}
                         className="hidden"
                     />
-                    <div className='flex space-x-3 w-full sm:w-fit-content'>
-                        <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full sm:w-auto">
-                            {uploading && <Spinner size="sm" className="mr-2" />}
+                    {/* <div className='flex flex-col lg:flex-row w-full space-y-3 lg:space-y-0 lg:space-x-3'>
+                        <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full md:w-auto">
+                            {uploading && <Spinner size="sm" className="mr-2.5" />}
                             {uploading ? 'Uploading...' : 'Update Profile'}
                         </Button>
-                        <Button onClick={confirmDeleteAccount} colorScheme='red' className="w-full sm:w-auto">
+                    </div> */}
+                    <div className='mt-[50px] flex flex-col border p-5 rounded-md space-y-3 w-full'>
+                        <Heading size="lg">Other items</Heading>
+                        <Divider className="my-3" />
+                        <Heading size="md">Account</Heading>
+                        <Button onClick={resetPassword} colorScheme='yellow' className="w-full md:w-auto">
+                            Reset Password
+                        </Button>
+                        <Button onClick={linkGoogleAccount} colorScheme='blue' className="w-full md:w-auto">
+                            {/* <FaGoogle className='mr-2.5 text-blue-300' /> */}
+                            Link Google Account
+                        </Button>
+                        <Divider className="my-3" />
+                        <Heading size="md">Delete Account</Heading>
+                        <Button onClick={confirmDeleteAccount} colorScheme='red' className="w-full md:w-auto">
                             Delete Account
                         </Button>
                     </div>
@@ -201,7 +262,7 @@ const Settings = () => {
                     <ModalHeader>Crop Image</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <div className="relative w-full h-64">
+                        <div className="relative w-full h-[250px]">
                             <Cropper
                                 image={file ? URL.createObjectURL(file) : undefined}
                                 crop={crop}
