@@ -76,7 +76,7 @@ const MobileNav: FC = () => {
           />
         </Flex>
         {isOpen ? (
-          <Box className="bg-white shadow-sm h-screen mt-3">
+          <Box className="bg-white shadow-sm h-screen pt-3">
             <Stack as="nav" spacing={3}>
               <MobileNavItem icon={FiHome} label="Home" href="/" />
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
