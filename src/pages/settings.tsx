@@ -219,7 +219,7 @@ const Settings = () => {
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 className="w-full mb-5"
                             />
-                            <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full md:w-auto">
+                            <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full">
                                 {uploading && <Spinner size="sm" className="mr-2.5" />}
                                 {uploading ? 'Uploading...' : 'Update Profile'}
                             </Button>
@@ -237,20 +237,20 @@ const Settings = () => {
                             {uploading ? 'Uploading...' : 'Update Profile'}
                         </Button>
                     </div> */}
-                    <div className='mt-[50px] flex flex-col border p-5 rounded-md space-y-3 w-full'>
-                        <Heading size="lg">Other items</Heading>
-                        <Divider className="my-3" />
+                    <div className='mt-[30px] flex flex-col border p-5 rounded-md space-y-3 w-full'>
+                        {/* <Heading size="lg">Other items</Heading> */}
+                        {/* <Divider className="my-3" /> */}
                         <Heading size="md">Account</Heading>
-                        <Button onClick={resetPassword} colorScheme='yellow' className="w-full md:w-auto">
+                        <Button onClick={resetPassword} className="w-full">
                             Reset Password
                         </Button>
-                        <Button onClick={linkGoogleAccount} colorScheme='blue' className="w-full md:w-auto">
+                        <Button onClick={linkGoogleAccount} className="w-full">
                             {/* <FaGoogle className='mr-2.5 text-blue-300' /> */}
                             Link Google Account
                         </Button>
                         <Divider className="my-3" />
                         <Heading size="md">Delete Account</Heading>
-                        <Button onClick={confirmDeleteAccount} colorScheme='red' className="w-full md:w-auto">
+                        <Button onClick={confirmDeleteAccount} colorScheme='red' className="w-full">
                             Delete Account
                         </Button>
                     </div>
