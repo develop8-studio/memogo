@@ -139,7 +139,7 @@ const Chat = () => {
         <div className="container mx-auto min-h-screen flex flex-col">
             <Head><title>Private Chat</title></Head>
             <Layout>
-            <Box flex="1" overflowY="auto" className="p-5">
+            <Box flex="1" overflowY="auto" className="md:p-5">
                     {messages.map((message) => (
                         <Box
                             key={message.id}
@@ -158,12 +158,12 @@ const Chat = () => {
                                     <img src={message.imageUrl} alt="Image" className="max-w-full h-auto rounded-md" />
                                 </Box>
                             )}
-                            <Text fontSize="xs" color="gray.500" textAlign="right">{new Date(message.timestamp.toDate()).toLocaleString()}</Text>
+                            <Text textAlign="right" className="text-xs mt-5" color={message.senderId === currentUser?.uid ? 'blue.300' : 'gray.500'}>{new Date(message.timestamp.toDate()).toLocaleString()}</Text>
                         </Box>
                     ))}
                     <div ref={messagesEndRef} />
                 </Box>
-                <Box className="p-3 sticky bottom-5 left-0 w-full bg-white border rounded-md shadow-md">
+                <Box className="p-3 fixed md:sticky md:bottom-5 left-0 bottom-0 w-full bg-white border rounded-md shadow-md">
                     <HStack>
                         <Input
                             value={newMessage}
