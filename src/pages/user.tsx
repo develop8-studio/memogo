@@ -151,7 +151,7 @@ const UserPage = () => {
             <Head><title>{user.displayName}</title></Head>
             <Layout>
                 {user.headerPhotoURL && (
-                    <div className="w-fit h-fit border rounded-md overflow-hidden mb-5">
+                    <div className="w-fit h-fit border rounded-md overflow-hidden mb-5 hidden md:block">
                         <Image src={user.headerPhotoURL} alt="Header Image" className="w-full object-cover rounded-md" />
                     </div>
                 )}

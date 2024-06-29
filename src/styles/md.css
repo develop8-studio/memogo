@@ -70,6 +70,7 @@
 
 .markdown-body li {
     margin-top: 0.25em;
+    background-color: #fff !important; /* チェックリスト項目の背景色を白に設定 */
 }
 
 .markdown-body blockquote {
@@ -103,14 +104,14 @@
 
 .markdown-body th {
     padding: 8px;
-    border: 1px solid #ddd;
-    background-color: #edf2f7;
+    border: 1px solid #d6e3ed !important;
+    background-color: #edf2f7 !important;
 }
 
 .markdown-body td {
     padding: 8px;
-    border: 1px solid #ddd;
-    background-color: #fff;
+    border: 1px solid #d6e3ed !important;
+    background-color: #fff !important;
 }
 
 .markdown-body img {
@@ -119,6 +120,9 @@
     background-color: #fff;
 }
 
-.markdown hr {
-    background-color: #ddd;
+.markdown-body hr {
+    border: 0;
+    height: 1px;
+    background-color: #e0e0e0 !important;
+    margin: 20px 0 !important;
 }

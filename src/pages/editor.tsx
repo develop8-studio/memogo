@@ -131,26 +131,13 @@ const Editor = () => {
                 <title>Editor</title>
             </Head>
             <Layout>
-                {/* <Input
-                    type="text"
-                    value={title}
-                    onChange={handleTitleChange}
-                    className="w-full mb-3"
-                    placeholder="Enter the title"
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                    className="hidden"
                 />
-                <Textarea
-                    value={description}
-                    onChange={handleDescriptionChange}
-                    className="w-full mb-3"
-                    placeholder="Enter the description"
-                /> */}
-                {/* <Textarea
-                    value={content}
-                    onChange={handleContentChange}
-                    className="w-full mb-5"
-                    placeholder="Write your markdown here..."
-                    height="200px"
-                /> */}
                 <Tabs variant="enclosed">
                     <TabList>
                         <Tab>Markdown</Tab>
@@ -158,36 +145,38 @@ const Editor = () => {
                     </TabList>
                     <TabPanels>
                         <TabPanel padding="15px 0">
-                            <Input
-                                type="text"
-                                value={title}
-                                onChange={handleTitleChange}
-                                className="w-full mb-3"
-                                placeholder="Enter the title"
-                            />
-                            <Textarea
-                                value={description}
-                                onChange={handleDescriptionChange}
-                                className="w-full mb-3"
-                                placeholder="Enter the description"
-                            />
-                            <Textarea
-                                value={content}
-                                onChange={handleContentChange}
-                                placeholder="Write your markdown here..."
-                                height="200px"
-                            />
-                            <Button onClick={openFileDialog} className="w-full mt-3" disabled={isUploading}>
-                                {isUploading ? <><Spinner size="sm" className="mr-2.5" />Uploading...</> : 'Upload Image'}
-                            </Button>
-                            {imageUrl && (
-                                <div className="flex mt-3">
-                                    <Input value={imageUrl} isReadOnly className="w-full" />
-                                    <Button onClick={onCopy} colorScheme='teal' className='ml-2.5'>
-                                        {hasCopied ? 'Copied' : 'Copy URL'}
-                                    </Button>
-                                </div>
-                            )}
+                            <div className="space-y-3">
+                                <Input
+                                    type="text"
+                                    value={title}
+                                    onChange={handleTitleChange}
+                                    className="w-full"
+                                    placeholder="Enter the title"
+                                />
+                                <Textarea
+                                    value={description}
+                                    onChange={handleDescriptionChange}
+                                    className="w-full"
+                                    placeholder="Enter the description"
+                                />
+                                <Textarea
+                                    value={content}
+                                    onChange={handleContentChange}
+                                    placeholder="Write your markdown here..."
+                                    height="200px"
+                                />
+                                <Button onClick={openFileDialog} className="w-full" disabled={isUploading}>
+                                    {isUploading ? <><Spinner size="sm" className="mr-2.5" />Uploading...</> : 'Upload Image'}
+                                </Button>
+                                {imageUrl && (
+                                    <div className="flex">
+                                        <Input value={imageUrl} isReadOnly className="w-full" />
+                                        <Button onClick={onCopy} colorScheme='teal' className='ml-2.5'>
+                                            {hasCopied ? 'Copied' : 'Copy URL'}
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
                         </TabPanel>
                         <TabPanel padding="15px 0">
                             <div className="markdown-body rounded-md border p-[30px]">
@@ -198,31 +187,9 @@ const Editor = () => {
                         </TabPanel>
                     </TabPanels>
                 </Tabs>
-
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    ref={fileInputRef}
-                    className="hidden"
-                />
-                {/* {imageUrl && (
-                    <div className="flex mt-3">
-                        <Input value={imageUrl} isReadOnly className="w-full" />
-                        <Button onClick={onCopy} colorScheme='teal' className='ml-2.5'>
-                            {hasCopied ? 'Copied' : 'Copy URL'}
-                        </Button>
-                    </div>
-                )} */}
                 <Button onClick={handlePublishClick} colorScheme='teal'>
                     Publish
                 </Button>
-                {/* <Text>Preview</Text> */}
-                {/* <div className="markdown-body rounded-md border p-[30px]">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {content}
-                    </ReactMarkdown>
-                </div> */}
             </Layout>
 
             <AlertDialog

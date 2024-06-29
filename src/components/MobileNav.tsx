@@ -2,9 +2,8 @@ import React, { FC, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Box, Divider, Flex, IconButton, Stack, useDisclosure, Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Image } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
-import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch } from 'react-icons/fi';
+import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch, FiBook, FiLogIn, FiUserPlus, FiFeather } from 'react-icons/fi';
 import { IconType } from 'react-icons';
-import { FaSignOutAlt } from 'react-icons/fa';
 import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { useRouter } from 'next/router';
@@ -18,7 +17,7 @@ interface MobileNavItemProps {
 const MobileNavItem: FC<MobileNavItemProps> = ({ icon, label, href }) => {
   return (
     <Link href={href}>
-      <Flex className="transition-colors hover:bg-emerald-500 hover:text-white cursor-pointer rounded-md mx-2.5 p-2.5 role-group text-center items-center">
+      <Flex className="mx-2.5 p-2.5 role-group text-center items-center">
         {icon && (
           <Box className="mr-3 text-base">
             {React.createElement(icon)}
@@ -52,7 +51,7 @@ const MobileNav: FC = () => {
   const handleLogout = async () => {
     setIsAlertOpen(false);
     await signOut(auth);
-    // router.push('/login');
+    router.push('/login');
   };
 
   const handleLogoutClick = () => {
@@ -82,19 +81,22 @@ const MobileNav: FC = () => {
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
               <MobileNavItem icon={FiSearch} label="Search" href="/search" />
               {user && <MobileNavItem icon={FiUser} label="Profile" href={`/user?id=${user.uid}`} />}
-              <MobileNavItem icon={FiUsers} label="Following" href="/following" />
-              <MobileNavItem icon={FiBookmark} label="Bookmarks" href="/bookmarks" />
-              <MobileNavItem icon={FiPenTool} label="Editor" href="/editor" />
-              <MobileNavItem icon={FiSettings} label="Settings" href="/settings" />
+              {user && <MobileNavItem icon={FiUserPlus} label="Following" href="/following" />}
+              {user && <MobileNavItem icon={FiBookmark} label="Bookmarks" href="bookmarks" />}
+              {user && <MobileNavItem icon={FiFeather} label="Editor" href="/editor" />}
+              {/* <MobileNavItem icon={FiSettings} label="Settings" href="/settings" /> */}
             </Stack>
             <Divider className='my-3' />
             <Stack as="nav" spacing={3}>
-              <button onClick={handleLogoutClick} className="transition-colors hover:bg-emerald-500 hover:text-white cursor-pointer rounded-md mx-2.5 p-2.5 role-group text-center items-center flex">
-                <Box className="mr-3 text-base">
-                  <FiLogOut />
-                </Box>
-                Logout
-              </button>
+              {!user && <MobileNavItem icon={FiLogIn} label="Login" href="/login" />}
+              {user && (
+                <button onClick={handleLogoutClick} className="mx-2.5 p-2.5 role-group text-center items-center flex">
+                  <Box className="mr-3 text-base">
+                    <FiLogOut />
+                  </Box>
+                  Logout
+                </button>
+              )}
             </Stack>
           </Box>
         ) : null}
