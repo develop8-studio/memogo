@@ -62,16 +62,18 @@ const Comments = ({ memoId }: CommentsProps) => {
 
     return (
         <Box w="full">
-            <HStack mt={5} spacing={2.5}>
-                <Input
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Write a comment..."
-                />
-                <Button onClick={handleComment} colorScheme="blue" borderRadius="md">
-                    Comment
-                </Button>
-            </HStack>
+            {currentUser && (
+                <HStack mt={5} spacing={2.5}>
+                    <Input
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Write a comment..."
+                    />
+                    <Button onClick={handleComment} colorScheme="blue" borderRadius="md">
+                        Comment
+                    </Button>
+                </HStack>
+            )}
             <VStack align="start" spacing={3} className="mt-5">
                 {comments.map((c, index) => (
                     <Box key={index} w="full">
