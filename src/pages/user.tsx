@@ -13,7 +13,7 @@ interface User {
     displayName: string;
     bio: string;
     twitter?: string;
-    headerPhotoURL?: string; // Add headerPhotoURL field to the User interface
+    headerPhotoURL?: string;
 }
 
 interface Memo {
@@ -163,13 +163,22 @@ const UserPage = () => {
                     </div>
                     <div className="ml-auto mt-3 lg:mt-0">
                         {currentUser && currentUser.uid !== id && (
-                            <Button
-                                onClick={isFollowing ? handleUnfollow : handleFollow}
-                                className={`lg:ml-3 ${isFollowing ? 'bg-slate-100' : 'bg-white'}`}
-                                variant="outline"
-                            >
-                                {isFollowing ? 'Unfollow' : 'Follow'}
-                            </Button>
+                            <>
+                                <Button
+                                    onClick={isFollowing ? handleUnfollow : handleFollow}
+                                    className={`lg:ml-3 ${isFollowing ? 'bg-slate-100' : 'bg-white'}`}
+                                    variant="outline"
+                                >
+                                    {isFollowing ? 'Unfollow' : 'Follow'}
+                                </Button>
+                                {isFollowing && (
+                                    <Link href={`/chat?id=${id}`}>
+                                        <Button className='lg:ml-3' variant="outline">
+                                            Chat
+                                        </Button>
+                                    </Link>
+                                )}
+                            </>
                         )}
                         {currentUser && currentUser.uid === id && (
                             <Button className='lg:ml-3' variant="outline">
