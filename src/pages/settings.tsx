@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { deleteUser, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider, InputGroup } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
@@ -28,13 +28,16 @@ const Settings = () => {
     const [displayName, setDisplayName] = useState('');
     const [bio, setBio] = useState('');
     const [file, setFile] = useState<File | null>(null);
+    const [headerFile, setHeaderFile] = useState<File | null>(null); // Header file state
     const [uploading, setUploading] = useState(false);
     const [photoURL, setPhotoURL] = useState('');
+    const [headerPhotoURL, setHeaderPhotoURL] = useState(''); // Header photo URL state
     const [dialogMessage, setDialogMessage] = useState('');
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
     const [isCropping, setIsCropping] = useState(false);
+    const [croppingHeader, setCroppingHeader] = useState(false); // State to determine which image is being cropped
     const [loading, setLoading] = useState(true);
     const [newPassword, setNewPassword] = useState('');
     const [twitter, setTwitter] = useState('');
@@ -52,6 +55,7 @@ const Settings = () => {
     const currentUser = auth.currentUser;
     const router = useRouter();
     const fileInput = useRef<HTMLInputElement | null>(null);
+    const headerFileInput = useRef<HTMLInputElement | null>(null); // Header file input ref
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -64,6 +68,7 @@ const Settings = () => {
                     setDisplayName(userData.displayName);
                     setBio(userData.bio);
                     setPhotoURL(userData.photoURL || '');
+                    setHeaderPhotoURL(userData.headerPhotoURL || ''); // Set header photo URL state
                     setTwitter(userData.twitter || ''); // Set the Twitter state
                 }
                 setLoading(false);
@@ -73,11 +78,16 @@ const Settings = () => {
         fetchUser();
     }, [currentUser]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isHeader = false) => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedFile = e.target.files[0];
-            setFile(selectedFile);
-            setIsCropping(true);
+            if (isHeader) {
+                setHeaderFile(selectedFile);
+                setCroppingHeader(true);
+            } else {
+                setFile(selectedFile);
+                setIsCropping(true);
+            }
         }
     };
 
@@ -87,21 +97,27 @@ const Settings = () => {
 
     const handleCropConfirm = async () => {
         try {
-            if (file && croppedAreaPixels && currentUser) {
-                const croppedImg = await getCroppedImg(URL.createObjectURL(file), croppedAreaPixels);
+            if ((file || headerFile) && croppedAreaPixels && currentUser) {
+                const croppedImg = await getCroppedImg(URL.createObjectURL(croppingHeader ? headerFile! : file!), croppedAreaPixels);
 
-                const fileRef = ref(storage, `profilePictures/${currentUser.uid}/profile.jpg`);
+                const fileRef = ref(storage, `${croppingHeader ? 'headerPictures' : 'profilePictures'}/${currentUser.uid}/${croppingHeader ? 'header' : 'profile'}.jpg`);
                 setUploading(true);
                 await uploadBytes(fileRef, croppedImg);
-                const photoURL = await getDownloadURL(fileRef);
+                const imageURL = await getDownloadURL(fileRef);
 
                 const docRef = doc(db, 'users', currentUser.uid);
-                await updateDoc(docRef, { photoURL });
+                await updateDoc(docRef, { [croppingHeader ? 'headerPhotoURL' : 'photoURL']: imageURL });
 
-                setPhotoURL(photoURL);
+                if (croppingHeader) {
+                    setHeaderPhotoURL(imageURL);
+                    setCroppingHeader(false);
+                    setHeaderFile(null);
+                } else {
+                    setPhotoURL(imageURL);
+                    setIsCropping(false);
+                    setFile(null);
+                }
                 setUploading(false);
-                setIsCropping(false);
-                setFile(null);
             }
         } catch (error) {
             console.error(error);
@@ -177,6 +193,24 @@ const Settings = () => {
         }
     };
 
+    const deleteHeaderImage = async () => {
+        if (currentUser && headerPhotoURL) {
+            const fileRef = ref(storage, `headerPictures/${currentUser.uid}/header.jpg`);
+            try {
+                await deleteObject(fileRef);
+                const docRef = doc(db, 'users', currentUser.uid);
+                await updateDoc(docRef, { headerPhotoURL: '' });
+                setHeaderPhotoURL('');
+                setDialogMessage('Header image deleted successfully!');
+                onOpen();
+            } catch (error) {
+                console.error(error);
+                setDialogMessage('Failed to delete header image.');
+                onOpen();
+            }
+        }
+    };
+
     if (loading) return <div className="w-full min-h-screen flex justify-center items-center"><Spinner size="xl" /></div>;
 
     return (
@@ -188,39 +222,59 @@ const Settings = () => {
                 <div>
                     <input
                         type="file"
-                        onChange={handleFileChange}
+                        onChange={(e) => handleFileChange(e)}
                         ref={fileInput}
                         className="hidden"
                     />
-                    <div className="flex flex-col lg:flex-row  w-full rounded-md border p-5">
-                        <div className='w-fit'>
-                            <Avatar src={photoURL} name={displayName} size="lg" className='cursor-pointer' onClick={() => fileInput.current?.click()} />
-                        </div>
-                        <div className='w-full lg:ml-5 mt-3 lg:mt-0'>
-                            <Text className="mb-1">Name</Text>
-                            <Input
-                                type="text"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                className="w-full mb-3"
-                            />
-                            <Text className="mb-1">Bio</Text>
-                            <Textarea
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                                className="w-full mb-3"
-                            />
-                            <Text className="mb-1">New Password</Text>
-                            <Input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full mb-5"
-                            />
-                            <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full">
-                                {uploading && <Spinner size="sm" className="mr-2.5" />}
-                                {uploading ? 'Uploading...' : 'Update Profile'}
+                    <input
+                        type="file"
+                        onChange={(e) => handleFileChange(e, true)}
+                        ref={headerFileInput}
+                        className="hidden"
+                    />
+                    <div className="flex flex-col w-full rounded-md p-5 border">
+                        {headerPhotoURL ? (
+                            <Image src={headerPhotoURL} alt="Header Image" className="w-full object-cover cursor-pointer mb-5 rounded-md h-32" onClick={() => headerFileInput.current?.click()} />
+                        ) : (
+                            <div className="w-full h-20 bg-gray-200 flex items-center justify-center cursor-pointer mb-5 rounded-md" onClick={() => headerFileInput.current?.click()}>
+                                <Text>Click to set header image</Text>
+                            </div>
+                        )}
+                        {headerPhotoURL && (
+                            <Button onClick={deleteHeaderImage} colorScheme="red" variant="outline" className="mb-3">
+                                Delete Header Image
                             </Button>
+                        )}
+                        <div className="flex flex-col lg:flex-row">
+                            <div className="flex flex-col">
+                                <Avatar src={photoURL} name={displayName} size="lg" className="cursor-pointer" onClick={() => fileInput.current?.click()} />
+                            </div>
+                            <div className='w-full lg:ml-5 mt-3 lg:mt-0'>
+                                <Text className="mb-1">Name</Text>
+                                <Input
+                                    type="text"
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    className="w-full mb-3"
+                                />
+                                <Text className="mb-1">Bio</Text>
+                                <Textarea
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                    className="w-full mb-3"
+                                />
+                                <Text className="mb-1">New Password</Text>
+                                <Input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full mb-5"
+                                />
+                                <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full">
+                                    {uploading && <Spinner size="sm" className="mr-2.5" />}
+                                    {uploading ? 'Uploading...' : 'Update Profile'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                     <div className='mt-[30px] flex flex-col border p-5 rounded-md space-y-3 w-full'>
@@ -245,7 +299,7 @@ const Settings = () => {
                     </div>
                 </div>
             </Layout>
-            <Modal isOpen={isCropping} onClose={() => setIsCropping(false)} isCentered size="xl">
+            <Modal isOpen={isCropping || croppingHeader} onClose={() => { setIsCropping(false); setCroppingHeader(false); }} isCentered size="xl">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Crop Image</ModalHeader>
@@ -253,10 +307,10 @@ const Settings = () => {
                     <ModalBody>
                         <div className="relative w-full h-[250px]">
                             <Cropper
-                                image={file ? URL.createObjectURL(file) : undefined}
+                                image={file ? URL.createObjectURL(file) : headerFile ? URL.createObjectURL(headerFile) : undefined}
                                 crop={crop}
                                 zoom={zoom}
-                                aspect={1}
+                                aspect={20 / 3} // Change aspect ratio to 20:3
                                 onCropChange={setCrop}
                                 onZoomChange={setZoom}
                                 onCropComplete={onCropComplete}
@@ -264,7 +318,7 @@ const Settings = () => {
                         </div>
                     </ModalBody>
                     <ModalFooter>
-                        <Button onClick={() => setIsCropping(false)} className='mr-3'>
+                        <Button onClick={() => { setIsCropping(false); setCroppingHeader(false); }} className='mr-3'>
                             Cancel
                         </Button>
                         <Button colorScheme='blue' onClick={handleCropConfirm}>

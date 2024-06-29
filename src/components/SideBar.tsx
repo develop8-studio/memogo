@@ -5,7 +5,7 @@ import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { useRouter } from 'next/router';
 import { Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Image } from '@chakra-ui/react';
-import { FiBookmark, FiHash, FiLogIn, FiLogOut, FiPenTool, FiSearch, FiSettings, FiUser, FiUserPlus } from 'react-icons/fi';
+import { FiBook, FiBookmark, FiHash, FiLogIn, FiLogOut, FiMeh, FiPenTool, FiSearch, FiSettings, FiUser, FiUserPlus } from 'react-icons/fi';
 
 interface MenuItemProps {
     icon: React.ReactNode;
@@ -55,7 +55,7 @@ const SideBar: React.FC = () => {
                     {user && <MenuItem icon={<FiUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
                     {user && <MenuItem icon={<FiUserPlus className="text-lg" />} href='/following' />}
                     {user && <MenuItem icon={<FiBookmark className="text-lg" />} href='/bookmarks' />}
-                    {user && <MenuItem icon={<FiPenTool className="text-lg" />} href='/editor' />}
+                    {user && <MenuItem icon={<FiBook className="text-lg" />} href='/editor' />}
                     {/* {user && <MenuItem icon={<FiSettings className="text-lg" />} href='/settings' />} */}
                 </div>
                 <div>

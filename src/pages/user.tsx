@@ -4,7 +4,7 @@ import { auth, db } from '@/firebase/firebaseConfig';
 import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { Heading, Text, Button, Spinner, Avatar } from '@chakra-ui/react';
+import { Heading, Text, Button, Spinner, Avatar, Image } from '@chakra-ui/react';
 import Head from 'next/head';
 import { FiTwitter } from 'react-icons/fi';
 
@@ -12,7 +12,8 @@ interface User {
     photoURL: string;
     displayName: string;
     bio: string;
-    twitter?: string; // Add twitter field to the User interface
+    twitter?: string;
+    headerPhotoURL?: string; // Add headerPhotoURL field to the User interface
 }
 
 interface Memo {
@@ -149,7 +150,10 @@ const UserPage = () => {
         <div className="container mx-auto my-10">
             <Head><title>{user.displayName}</title></Head>
             <Layout>
-                <div className="contents lg:flex items-center">
+                {user.headerPhotoURL && (
+                    <Image src={user.headerPhotoURL} alt="Header Image" className="w-full object-cover mb-5 rounded-md" />
+                )}
+                <div className="contents lg:flex items-center mt-3 lg:mt-0">
                     <Avatar src={user.photoURL} name={user.displayName} size="lg" />
                     <div className='mt-3 lg:mt-0 lg:ml-3'>
                         <Heading size="md">{user.displayName}</Heading>
