@@ -1,12 +1,13 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { Heading, Text, Button, Spinner, Avatar, Image } from '@chakra-ui/react';
 import Head from 'next/head';
 import { FiTwitter } from 'react-icons/fi';
+import { v4 as uuidv4 } from 'uuid';
 
 interface User {
     photoURL: string;
@@ -142,6 +143,35 @@ const UserPage = () => {
         }
     };
 
+    const generateChatRoomId = () => {
+        return uuidv4();
+    };
+
+    const [chatRoomId, setChatRoomId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const createOrFetchChatRoom = async () => {
+            if (currentUser && id && typeof id === 'string') {
+                const chatRoomQuery = query(
+                    collection(db, 'chatRooms'),
+                    where('members', 'array-contains-any', [currentUser.uid, id])
+                );
+                const chatRoomSnapshot = await getDocs(chatRoomQuery);
+                if (!chatRoomSnapshot.empty) {
+                    setChatRoomId(chatRoomSnapshot.docs[0].id);
+                } else {
+                    const newChatRoomId = generateChatRoomId();
+                    await setDoc(doc(db, 'chatRooms', newChatRoomId), {
+                        members: [currentUser.uid, id],
+                        createdAt: new Date()
+                    });
+                    setChatRoomId(newChatRoomId);
+                }
+            }
+        };
+        createOrFetchChatRoom();
+    }, [currentUser, id]);
+
     if (loading) return <div className="w-full min-h-screen flex justify-center items-center h-screen"><Spinner size="xl" /></div>;
     if (error) return <div className="text-red-500">{error}</div>;
     if (!user) return <div>No user found</div>;
@@ -171,8 +201,8 @@ const UserPage = () => {
                                 >
                                     {isFollowing ? 'Unfollow' : 'Follow'}
                                 </Button>
-                                {isFollowing && (
-                                    <Link href={`/chat?id=${id}`}>
+                                {isFollowing && chatRoomId && (
+                                    <Link href={`/chat?id=${chatRoomId}`}>
                                         <Button className='lg:ml-3' variant="outline">
                                             Chat
                                         </Button>
