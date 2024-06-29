@@ -8,7 +8,7 @@ import BookmarkButton from '../components/BookmarkButton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Head from 'next/head';
-import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea, Spinner, Input } from '@chakra-ui/react';
+import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea, Spinner, Input, Box } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ChevronDownIcon } from '@chakra-ui/icons';
@@ -143,16 +143,18 @@ const Memo = () => {
                             <Heading className="mb-2.5">{memoData.title}</Heading>
                             <Text>{memoData.description}</Text>
                             {memoData.userId !== currentUserId && authorData && (
-                                <HStack spacing={3} className="mt-5 border p-1.5 rounded-md w-full mb-10">
-                                    <Link href={`/user?id=${memoData.userId}`} passHref>
-                                        <Avatar src={authorData.photoURL} name={authorData.displayName} size="md" />
-                                    </Link>
-                                    <VStack align="start" spacing={1}>
+                                <Box className="p-3 w-full rounded-md mt-5 border">
+                                    <HStack spacing={3} align="center">
                                         <Link href={`/user?id=${memoData.userId}`} passHref>
-                                            <Text fontWeight="bold">{authorData.displayName}</Text>
+                                            <Avatar src={authorData.photoURL} name={authorData.displayName} size="md" />
                                         </Link>
-                                    </VStack>
-                                </HStack>
+                                        <VStack align="start" spacing={0}>
+                                            <Link href={`/user?id=${memoData.userId}`} passHref>
+                                                <Text fontWeight="bold">{authorData.displayName}</Text>
+                                            </Link>
+                                        </VStack>
+                                    </HStack>
+                                </Box>
                             )}
                         </div>
                         {memoData.userId === currentUserId && (

@@ -62,14 +62,14 @@ const Following = () => {
                 <Heading size="md" className="mb-5">Following</Heading>
                 <VStack spacing={4} align="start">
                     {following.map((user) => (
-                        <Box key={user.uid} w="100%" p={3} borderWidth={1} borderRadius="md">
+                        <Box key={user.uid} className="p-3 w-full rounded-md border">
                             <HStack spacing={3} align="center">
                                 <Link href={`/user?id=${user.uid}`} passHref>
                                     <Avatar src={user.photoURL} name={user.displayName} size="md" />
                                 </Link>
                                 <VStack align="start" spacing={0}>
                                     <Link href={`/user?id=${user.uid}`} passHref>
-                                        <h3 className="font-bold text-md">{user.displayName}</h3>
+                                        <Text fontWeight="bold">{user.displayName}</Text>
                                     </Link>
                                     {/* <Text>{user.bio}</Text> */}
                                 </VStack>
