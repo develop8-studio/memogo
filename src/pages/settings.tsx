@@ -4,7 +4,7 @@ import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { deleteUser, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider } from '@chakra-ui/react';
+import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider, InputGroup } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 import Head from 'next/head';
@@ -19,8 +19,8 @@ import {
     AlertDialogCloseButton,
     useDisclosure,
 } from '@chakra-ui/react';
-import { FaGoogle, FaUserCircle } from 'react-icons/fa';
 import getCroppedImg from "@/utils/cropImage";
+import { FiTwitter } from 'react-icons/fi';
 
 const Settings = () => {
     useAuthRedirect();
@@ -37,6 +37,7 @@ const Settings = () => {
     const [isCropping, setIsCropping] = useState(false);
     const [loading, setLoading] = useState(true);
     const [newPassword, setNewPassword] = useState('');
+    const [twitter, setTwitter] = useState('');
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const {
@@ -63,6 +64,7 @@ const Settings = () => {
                     setDisplayName(userData.displayName);
                     setBio(userData.bio);
                     setPhotoURL(userData.photoURL || '');
+                    setTwitter(userData.twitter || ''); // Set the Twitter state
                 }
                 setLoading(false);
             }
@@ -112,6 +114,7 @@ const Settings = () => {
             const updatedData: { [key: string]: any } = {
                 displayName,
                 bio,
+                twitter, // Add the Twitter account ID to the updated data
             };
 
             await updateDoc(docRef, updatedData);
@@ -183,20 +186,15 @@ const Settings = () => {
             </Head>
             <Layout>
                 <div>
+                    <input
+                        type="file"
+                        onChange={handleFileChange}
+                        ref={fileInput}
+                        className="hidden"
+                    />
                     <div className="flex flex-col lg:flex-row  w-full rounded-md border p-5">
                         <div className='w-fit'>
-                            {/* {photoURL ? (
-                                <>
-                                    <Avatar name={displayName} src={photoURL} size="lg" className='cursor-pointer' onClick={() => fileInput.current?.click()} />
-                                </>
-                            ) : (
-                                <FaUserCircle
-                                    className="w-auto h-auto rounded-full cursor-pointer text-slate-500"
-                                    size="6em"
-                                    onClick={() => fileInput.current?.click()}
-                                />
-                            )} */}
-                            <Avatar name={displayName} src={photoURL} size="lg" className='cursor-pointer' onClick={() => fileInput.current?.click()} />
+                            <Avatar src={photoURL} name={displayName} size="lg" className='cursor-pointer' onClick={() => fileInput.current?.click()} />
                         </div>
                         <div className='w-full lg:ml-5 mt-3 lg:mt-0'>
                             <Text className="mb-1">Name</Text>
@@ -225,27 +223,18 @@ const Settings = () => {
                             </Button>
                         </div>
                     </div>
-                    <input
-                        type="file"
-                        onChange={handleFileChange}
-                        ref={fileInput}
-                        className="hidden"
-                    />
-                    {/* <div className='flex flex-col lg:flex-row w-full space-y-3 lg:space-y-0 lg:space-x-3'>
-                        <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full md:w-auto">
-                            {uploading && <Spinner size="sm" className="mr-2.5" />}
-                            {uploading ? 'Uploading...' : 'Update Profile'}
-                        </Button>
-                    </div> */}
                     <div className='mt-[30px] flex flex-col border p-5 rounded-md space-y-3 w-full'>
-                        {/* <Heading size="lg">Other items</Heading> */}
-                        {/* <Divider className="my-3" /> */}
+                        <Heading size="md">Integration</Heading>
+                        <div className="flex items-center">
+                            <FiTwitter className="text-2xl mr-2.5" /><Input placeholder='Twitter Account' value={twitter} onChange={(e) => setTwitter(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className='mt-[30px] flex flex-col border p-5 rounded-md space-y-3 w-full'>
                         <Heading size="md">Account</Heading>
-                        <Button onClick={resetPassword} className="w-full">
+                        <Button onClick={resetPassword} className="w-full" variant="outline">
                             Reset Password
                         </Button>
-                        <Button onClick={linkGoogleAccount} className="w-full">
-                            {/* <FaGoogle className='mr-2.5 text-blue-300' /> */}
+                        <Button onClick={linkGoogleAccount} className="w-full" variant="outline">
                             Link Google Account
                         </Button>
                         <Divider className="my-3" />

@@ -118,3 +118,7 @@
     height: auto;
     background-color: #fff;
 }
+
+.markdown hr {
+    background-color: #ddd;
+}

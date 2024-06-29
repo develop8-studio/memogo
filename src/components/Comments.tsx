@@ -77,7 +77,7 @@ const Comments = ({ memoId }: CommentsProps) => {
                     <Box key={index} w="full">
                         <HStack align="start">
                             <NextLink href={`/user?id=${c.userId}`} passHref>
-                                <Image src={c.photoURL} className="w-10 h-10 rounded-full border" />
+                                <Avatar src={c.photoURL} name={c.userId} size="md" />
                             </NextLink>
                             <VStack align="start" spacing={1}>
                                 <NextLink href={`/user?id=${c.userId}`} passHref>

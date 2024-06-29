@@ -6,11 +6,13 @@ import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { Heading, Text, Button, Spinner, Avatar } from '@chakra-ui/react';
 import Head from 'next/head';
+import { FiTwitter } from 'react-icons/fi';
 
 interface User {
     photoURL: string;
     displayName: string;
     bio: string;
+    twitter?: string; // Add twitter field to the User interface
 }
 
 interface Memo {
@@ -152,7 +154,6 @@ const UserPage = () => {
                     <div className='mt-3 lg:mt-0 lg:ml-3'>
                         <Heading size="md">{user.displayName}</Heading>
                         <Text className="text-slate-500 lg:whitespace-pre-line">{user.bio}</Text>
-                        {/* <Text className="text-slate-500 mt-2">Followers: {followerCount}</Text> */}
                     </div>
                     <div className="ml-auto mt-3 lg:mt-0">
                         {currentUser && currentUser.uid !== id && (
@@ -172,6 +173,14 @@ const UserPage = () => {
                     </div>
                 </div>
                 <Text className="text-slate-500 mt-3 text-sm">{followerCount} Followers</Text>
+                {user.twitter && (
+                    <div className="flex items-center mt-3">
+                        <FiTwitter className='mr-1 text-lg' />
+                        <Link href={`https://twitter.com/${user.twitter}`} target="_blank" rel="noopener noreferrer">
+                            @{user.twitter}
+                        </Link>
+                    </div>
+                )}
                 <div className="mt-[30px]">
                     <ul className="space-y-3">
                         {memos.map((memo) => (

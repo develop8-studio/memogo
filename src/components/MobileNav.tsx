@@ -66,7 +66,7 @@ const MobileNav: FC = () => {
           as="nav"
           className="transition-all min-h-[60px] py-1.5 px-3 text-gray-600 bg-white justify-between items-center border-b"
         >
-          <Image src="/logo.png" alt='MemoGo' className="w-[100px]" />
+          <Link href="/"><Image src="/logo.png" alt='MemoGo' className="w-[100px]" /></Link>
           <IconButton
             size="md"
             icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
@@ -78,7 +78,7 @@ const MobileNav: FC = () => {
         {isOpen ? (
           <Box className="bg-white shadow-sm h-screen pt-3">
             <Stack as="nav" spacing={3}>
-              <MobileNavItem icon={FiHome} label="Home" href="/" />
+              {/* <MobileNavItem icon={FiHome} label="Home" href="/" /> */}
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
               <MobileNavItem icon={FiSearch} label="Search" href="/search" />
               {user && <MobileNavItem icon={FiUser} label="Profile" href={`/user?id=${user.uid}`} />}

@@ -8,7 +8,7 @@ import BookmarkButton from '../components/BookmarkButton';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Head from 'next/head';
-import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea, Spinner } from '@chakra-ui/react';
+import { Center, Heading, Text, Button, Menu, MenuButton, MenuList, MenuItem, Divider, Avatar, HStack, VStack, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Textarea, Spinner, Input } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ChevronDownIcon } from '@chakra-ui/icons';
@@ -34,6 +34,8 @@ const Memo = () => {
     const [authorData, setAuthorData] = useState<UserData | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
     const [editContent, setEditContent] = useState('');
     const [loading, setLoading] = useState<boolean>(true);
     const cancelRef = useRef(null);
@@ -109,6 +111,8 @@ const Memo = () => {
 
     const openEditDialog = () => {
         if (memoData) {
+            setEditTitle(memoData.title);
+            setEditDescription(memoData.description);
             setEditContent(memoData.content);
             setIsEditOpen(true);
         }
@@ -117,8 +121,8 @@ const Memo = () => {
     const saveEditedContent = async () => {
         if (typeof id === 'string' && memoData) {
             const docRef = doc(db, 'memos', id);
-            await updateDoc(docRef, { content: editContent });
-            setMemoData({ ...memoData, content: editContent });
+            await updateDoc(docRef, { title: editTitle, description: editDescription, content: editContent });
+            setMemoData({ ...memoData, title: editTitle, description: editDescription, content: editContent });
             setIsEditOpen(false);
         }
     };
@@ -141,7 +145,7 @@ const Memo = () => {
                             {memoData.userId !== currentUserId && authorData && (
                                 <HStack spacing={3} className="mt-5 border p-1.5 rounded-md w-full mb-10">
                                     <Link href={`/user?id=${memoData.userId}`} passHref>
-                                        <Avatar src={authorData.photoURL} size="md" />
+                                        <Avatar src={authorData.photoURL} name={authorData.displayName} size="md" />
                                     </Link>
                                     <VStack align="start" spacing={1}>
                                         <Link href={`/user?id=${memoData.userId}`} passHref>
@@ -199,6 +203,20 @@ const Memo = () => {
                                                 Edit Memo
                                             </AlertDialogHeader>
                                             <AlertDialogBody>
+                                                <Input
+                                                    value={editTitle}
+                                                    onChange={(e) => setEditTitle(e.target.value)}
+                                                    placeholder="Edit your memo title here..."
+                                                    size="sm"
+                                                    mb={3}
+                                                />
+                                                <Input
+                                                    value={editDescription}
+                                                    onChange={(e) => setEditDescription(e.target.value)}
+                                                    placeholder="Edit your memo description here..."
+                                                    size="sm"
+                                                    mb={3}
+                                                />
                                                 <Textarea
                                                     value={editContent}
                                                     onChange={(e) => setEditContent(e.target.value)}
