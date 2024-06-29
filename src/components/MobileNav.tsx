@@ -52,7 +52,7 @@ const MobileNav: FC = () => {
   const handleLogout = async () => {
     setIsAlertOpen(false);
     await signOut(auth);
-    router.push('/login');
+    // router.push('/login');
   };
 
   const handleLogoutClick = () => {
