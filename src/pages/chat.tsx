@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
-import { collection, addDoc, query, where, getDocs, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import Layout from '@/components/Layout';
 import { Input, Button, Spinner } from '@chakra-ui/react';
 import Head from 'next/head';
@@ -29,7 +29,7 @@ const Chat = () => {
             try {
                 setLoading(true);
                 const q = query(
-                    collection(db, 'chats', id, 'messages'),
+                    collection(db, 'chatRooms', id, 'messages'),
                     orderBy('timestamp', 'asc')
                 );
 
@@ -59,7 +59,7 @@ const Chat = () => {
     const sendMessage = async () => {
         if (!newMessage.trim() || !currentUser) return;
         try {
-            await addDoc(collection(db, 'chats', id as string, 'messages'), {
+            await addDoc(collection(db, 'chatRooms', id as string, 'messages'), {
                 text: newMessage,
                 senderId: currentUser.uid,
                 timestamp: new Date()

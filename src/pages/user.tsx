@@ -30,6 +30,7 @@ const UserPage = () => {
     const [user, setUser] = useState<User | null>(null);
     const [memos, setMemos] = useState<Memo[]>([]);
     const [isFollowing, setIsFollowing] = useState<boolean>(false);
+    const [isMutualFollowing, setIsMutualFollowing] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [followerCount, setFollowerCount] = useState<number>(0);
@@ -73,10 +74,16 @@ const UserPage = () => {
         const checkFollowingStatus = async () => {
             try {
                 if (currentUser && id && typeof id === 'string') {
-                    const q = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid), where('followingId', '==', id));
-                    const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
+                    const followQuery = query(collection(db, 'follows'), where('followerId', '==', currentUser.uid), where('followingId', '==', id));
+                    const followSnapshot = await getDocs(followQuery);
+                    if (!followSnapshot.empty) {
                         setIsFollowing(true);
+                    }
+
+                    const mutualFollowQuery = query(collection(db, 'follows'), where('followerId', '==', id), where('followingId', '==', currentUser.uid));
+                    const mutualFollowSnapshot = await getDocs(mutualFollowQuery);
+                    if (!mutualFollowSnapshot.empty) {
+                        setIsMutualFollowing(true);
                     }
                 }
             } catch (err) {
@@ -143,8 +150,8 @@ const UserPage = () => {
         }
     };
 
-    const generateChatRoomId = () => {
-        return uuidv4();
+    const generateChatRoomId = (userId1: string, userId2: string) => {
+        return `${userId1}_${userId2}`;
     };
 
     const [chatRoomId, setChatRoomId] = useState<string | null>(null);
@@ -152,21 +159,9 @@ const UserPage = () => {
     useEffect(() => {
         const createOrFetchChatRoom = async () => {
             if (currentUser && id && typeof id === 'string') {
-                const chatRoomQuery = query(
-                    collection(db, 'chatRooms'),
-                    where('members', 'array-contains-any', [currentUser.uid, id])
-                );
-                const chatRoomSnapshot = await getDocs(chatRoomQuery);
-                if (!chatRoomSnapshot.empty) {
-                    setChatRoomId(chatRoomSnapshot.docs[0].id);
-                } else {
-                    const newChatRoomId = generateChatRoomId();
-                    await setDoc(doc(db, 'chatRooms', newChatRoomId), {
-                        members: [currentUser.uid, id],
-                        createdAt: new Date()
-                    });
-                    setChatRoomId(newChatRoomId);
-                }
+                const sortedIds = [currentUser.uid, id].sort();
+                const newChatRoomId = generateChatRoomId(sortedIds[0], sortedIds[1]);
+                setChatRoomId(newChatRoomId);
             }
         };
         createOrFetchChatRoom();
@@ -201,7 +196,7 @@ const UserPage = () => {
                                 >
                                     {isFollowing ? 'Unfollow' : 'Follow'}
                                 </Button>
-                                {isFollowing && chatRoomId && (
+                                {isMutualFollowing && chatRoomId && (
                                     <Link href={`/chat?id=${chatRoomId}`}>
                                         <Button className='lg:ml-3' variant="outline">
                                             Chat
