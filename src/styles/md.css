@@ -70,7 +70,6 @@
 
 .markdown-body li {
     margin-top: 0.25em;
-    background-color: #fff !important; /* チェックリスト項目の背景色を白に設定 */
 }
 
 .markdown-body blockquote {
@@ -125,4 +124,36 @@
     height: 1px;
     background-color: #e0e0e0 !important;
     margin: 20px 0 !important;
+}
+
+.markdown-body input[type="checkbox"] {
+    appearance: none !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 8px !important;
+    border: 2px solid #333 !important;
+    border-radius: 3px !important;
+    background-color: #fff !important;
+    vertical-align: middle !important;
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.markdown-body input[type="checkbox"]:checked {
+    background-color: var(--fgColor-accent) !important;
+    border-color: var(--fgColor-accent) !important;
+}
+
+.markdown-body input[type="checkbox"]:checked::before {
+    content: "✓" !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    display: block !important;
+}
+
+.markdown-body li {
+    display: flex !important;
+    align-items: center !important;
 }
