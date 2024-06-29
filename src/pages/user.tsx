@@ -198,7 +198,7 @@ const UserPage = () => {
                                 </Button>
                                 {isMutualFollowing && chatRoomId && (
                                     <Link href={`/chat?id=${chatRoomId}`}>
-                                        <Button className='lg:ml-3' variant="outline">
+                                        <Button className='ml-3' variant="outline">
                                             Chat
                                         </Button>
                                     </Link>

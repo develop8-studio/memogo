@@ -139,7 +139,7 @@ const Chat = () => {
         <div className="container mx-auto min-h-screen flex flex-col">
             <Head><title>Private Chat</title></Head>
             <Layout>
-            <Box flex="1" overflowY="auto" className="md:p-5">
+            <Box flex="1" overflowY="auto" className="md:p-5 mt-5 mb-[120px] md:mt-0 md:mb-0">
                     {messages.map((message) => (
                         <Box
                             key={message.id}
