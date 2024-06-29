@@ -66,7 +66,7 @@ const MobileNav: FC = () => {
           as="nav"
           className="transition-all min-h-[60px] py-1.5 px-3 text-gray-600 bg-white justify-between items-center border-b"
         >
-          <Image src="/memogo-header-logo.png" alt='MemoGo' className="w-[100px]" />
+          <Image src="/logo.png" alt='MemoGo' className="w-[100px]" />
           <IconButton
             size="md"
             icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}

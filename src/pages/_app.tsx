@@ -9,6 +9,7 @@ import MobileNav from "@/components/MobileNav"
 import SideBar from "@/components/SideBar"
 import 'github-markdown-css/github-markdown.css'
 import '@/styles/md.css'
+import Header from "@/components/Header"
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -18,11 +19,11 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/memogo.png" />
         <link rel="apple-touch-icon" href="/memogo.png" />
       </Head>
-      {/* <Navbar /> */}
+      {/* <Header /> */}
       <div className="flex w-full pt-[60px] md:pt-0">
         <SideBar />
+        {/* <Header /> */}
         <MobileNav />
-        {/* <Navbar /> */}
         <Component {...pageProps} />
       </div>
     </ChakraProvider>

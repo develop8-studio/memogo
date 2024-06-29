@@ -4,13 +4,12 @@ import Link from 'next/link';
 import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { useRouter } from 'next/router';
-import { Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Image } from '@chakra-ui/react';
-import { FiBookmark, FiHash, FiLogIn, FiLogOut, FiPenTool, FiSearch, FiSettings, FiUser, FiUserPlus } from 'react-icons/fi';
+import { Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay } from '@chakra-ui/react';
 
 interface MenuItemProps {
     icon: React.ReactNode;
-    href?: string;
-    onClick?: () => void;
+    href?: string; // href is optional
+    onClick?: () => void; // Optional onClick handler
 }
 
 const SideBar: React.FC = () => {
@@ -44,23 +43,20 @@ const SideBar: React.FC = () => {
 
     return (
         <>
-            <div className="hidden md:flex sticky top-0 h-screen w-16 flex-col bg-white text-black shadow-sm border-r">
-                <Link href="/" className='p-3'>
-                    <Image src="/memogo.png" className="rounded-md" />
-                </Link>
+            <div className="hidden md:flex sticky top-0 h-screen w-16 flex-col bg-gray-800 text-white shadow-sm">
                 <div className="flex-grow">
-                    {/* <MenuItem icon={<FaHome className="text-lg" />} href="/" /> */}
-                    <MenuItem icon={<FiHash className="text-lg" />} href="/feed" />
-                    <MenuItem icon={<FiSearch className="text-lg" />} href="/search" />
-                    {user && <MenuItem icon={<FiUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
-                    {user && <MenuItem icon={<FiUserPlus className="text-lg" />} href='/following' />}
-                    {user && <MenuItem icon={<FiBookmark className="text-lg" />} href='/bookmarks' />}
-                    {user && <MenuItem icon={<FiPenTool className="text-lg" />} href='/editor' />}
-                    {/* {user && <MenuItem icon={<FiSettings className="text-lg" />} href='/settings' />} */}
+                    <MenuItem icon={<FaHome className="text-lg" />} href="/" />
+                    <MenuItem icon={<FaHashtag className="text-lg" />} href="/feed" />
+                    <MenuItem icon={<FaSearch className="text-lg" />} href="/search" />
+                    {user && <MenuItem icon={<FaUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
+                    {user && <MenuItem icon={<FaUserFriends className="text-lg" />} href='/following' />}
+                    {user && <MenuItem icon={<FaBookmark className="text-lg" />} href='/bookmarks' />}
+                    {user && <MenuItem icon={<FaPen className="text-lg" />} href='/editor' />}
+                    {user && <MenuItem icon={<FaCog className="text-lg" />} href='/settings' />}
                 </div>
                 <div>
-                    {!user && <MenuItem icon={<FiLogIn className="text-lg" />} href='/login' />}
-                    {user && <MenuItem icon={<FiLogOut className="text-lg" />} onClick={handleLogoutClick} />}
+                    {!user && <MenuItem icon={<FaSignInAlt className="text-lg" />} href='/login' />}
+                    {user && <MenuItem icon={<FaSignOutAlt className="text-lg" />} onClick={handleLogoutClick} />}
                 </div>
             </div>
 
@@ -98,13 +94,13 @@ const SideBar: React.FC = () => {
 const MenuItem: React.FC<MenuItemProps> = ({ icon, href, onClick }) => {
     if (href) {
         return (
-            <Link href={href} className="h-16 flex items-center justify-center">
+            <Link href={href} className="h-16 flex items-center justify-center transition-colors hover:bg-gray-500 rounded-tl-md rounded-bl-md">
                 {icon}
             </Link>
         );
     } else {
         return (
-            <button className="h-16 w-full flex items-center justify-center" onClick={onClick}>
+            <button className="h-16 w-full flex items-center justify-center transition-colors hover:bg-gray-500 rounded-tl-md rounded-bl-md" onClick={onClick}>
                 {icon}
             </button>
         );
