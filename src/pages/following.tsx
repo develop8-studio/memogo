@@ -65,7 +65,7 @@ const Following = () => {
                         <Box key={user.uid} w="100%" p={3} borderWidth={1} borderRadius="md">
                             <HStack spacing={3} align="center">
                                 <Link href={`/user?id=${user.uid}`} passHref>
-                                    <Avatar src={user.photoURL} size="md" />
+                                    <Avatar src={user.photoURL} name={user.displayName} size="md" />
                                 </Link>
                                 <VStack align="start" spacing={0}>
                                     <Link href={`/user?id=${user.uid}`} passHref>

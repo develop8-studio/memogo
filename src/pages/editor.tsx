@@ -17,7 +17,12 @@ import {
     AlertDialogContent,
     AlertDialogOverlay,
     Text,
-    Spinner
+    Spinner,
+    Tabs,
+    TabList,
+    Tab,
+    TabPanels,
+    TabPanel
 } from '@chakra-ui/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -139,13 +144,36 @@ const Editor = () => {
                     className="w-full mb-3"
                     placeholder="Enter the description"
                 />
-                <Textarea
+                {/* <Textarea
                     value={content}
                     onChange={handleContentChange}
                     className="w-full mb-5"
                     placeholder="Write your markdown here..."
                     height="200px"
-                />
+                /> */}
+                <Tabs variant="enclosed">
+                    <TabList>
+                        <Tab>Markdown</Tab>
+                        <Tab>Preview</Tab>
+                    </TabList>
+                    <TabPanels>
+                        <TabPanel padding="15px 0">
+                            <Textarea
+                                value={content}
+                                onChange={handleContentChange}
+                                placeholder="Write your markdown here..."
+                                height="200px"
+                            />
+                        </TabPanel>
+                        <TabPanel padding="15px 0">
+                            <div className="markdown-body rounded-md border p-[30px]">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {content}
+                                </ReactMarkdown>
+                            </div>
+                        </TabPanel>
+                    </TabPanels>
+                </Tabs>
                 <Button onClick={openFileDialog} className="w-full" disabled={isUploading}>
                     {isUploading ? <><Spinner size="sm" className="mr-2" />Uploading...</> : 'Upload Image'}
                 </Button>
@@ -167,12 +195,12 @@ const Editor = () => {
                 <Button onClick={handlePublishClick} colorScheme='teal' className='my-5'>
                     Publish
                 </Button>
-                <Text>Preview</Text>
-                <div className="markdown-body rounded-md border p-[30px]">
+                {/* <Text>Preview</Text> */}
+                {/* <div className="markdown-body rounded-md border p-[30px]">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {content}
                     </ReactMarkdown>
-                </div>
+                </div> */}
             </Layout>
 
             <AlertDialog

@@ -38,6 +38,7 @@ const Settings = () => {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
     const [isCropping, setIsCropping] = useState(false);
     const [croppingHeader, setCroppingHeader] = useState(false); // State to determine which image is being cropped
+    const [croppingAvatar, setCroppingAvatar] = useState(false); // State to determine which image is being cropped
     const [loading, setLoading] = useState(true);
     const [newPassword, setNewPassword] = useState('');
     const [twitter, setTwitter] = useState('');
@@ -56,6 +57,7 @@ const Settings = () => {
     const router = useRouter();
     const fileInput = useRef<HTMLInputElement | null>(null);
     const headerFileInput = useRef<HTMLInputElement | null>(null); // Header file input ref
+    const avatarFileInput = useRef<HTMLInputElement | null>(null); // Avatar file input ref
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -78,15 +80,15 @@ const Settings = () => {
         fetchUser();
     }, [currentUser]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isHeader = false) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'header' | 'avatar') => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedFile = e.target.files[0];
-            if (isHeader) {
+            if (type === 'header') {
                 setHeaderFile(selectedFile);
                 setCroppingHeader(true);
-            } else {
+            } else if (type === 'avatar') {
                 setFile(selectedFile);
-                setIsCropping(true);
+                setCroppingAvatar(true);
             }
         }
     };
@@ -95,26 +97,26 @@ const Settings = () => {
         setCroppedAreaPixels(croppedAreaPixels);
     };
 
-    const handleCropConfirm = async () => {
+    const handleCropConfirm = async (type: 'header' | 'avatar') => {
         try {
             if ((file || headerFile) && croppedAreaPixels && currentUser) {
-                const croppedImg = await getCroppedImg(URL.createObjectURL(croppingHeader ? headerFile! : file!), croppedAreaPixels);
+                const croppedImg = await getCroppedImg(URL.createObjectURL(type === 'header' ? headerFile! : file!), croppedAreaPixels);
 
-                const fileRef = ref(storage, `${croppingHeader ? 'headerPictures' : 'profilePictures'}/${currentUser.uid}/${croppingHeader ? 'header' : 'profile'}.jpg`);
+                const fileRef = ref(storage, `${type === 'header' ? 'headerPictures' : 'profilePictures'}/${currentUser.uid}/${type}.jpg`);
                 setUploading(true);
                 await uploadBytes(fileRef, croppedImg);
                 const imageURL = await getDownloadURL(fileRef);
 
                 const docRef = doc(db, 'users', currentUser.uid);
-                await updateDoc(docRef, { [croppingHeader ? 'headerPhotoURL' : 'photoURL']: imageURL });
+                await updateDoc(docRef, { [type === 'header' ? 'headerPhotoURL' : 'photoURL']: imageURL });
 
-                if (croppingHeader) {
+                if (type === 'header') {
                     setHeaderPhotoURL(imageURL);
                     setCroppingHeader(false);
                     setHeaderFile(null);
                 } else {
                     setPhotoURL(imageURL);
-                    setIsCropping(false);
+                    setCroppingAvatar(false);
                     setFile(null);
                 }
                 setUploading(false);
@@ -222,19 +224,21 @@ const Settings = () => {
                 <div>
                     <input
                         type="file"
-                        onChange={(e) => handleFileChange(e)}
-                        ref={fileInput}
+                        onChange={(e) => handleFileChange(e, 'avatar')}
+                        ref={avatarFileInput}
                         className="hidden"
                     />
                     <input
                         type="file"
-                        onChange={(e) => handleFileChange(e, true)}
+                        onChange={(e) => handleFileChange(e, 'header')}
                         ref={headerFileInput}
                         className="hidden"
                     />
                     <div className="flex flex-col w-full rounded-md p-5 border">
                         {headerPhotoURL ? (
-                            <Image src={headerPhotoURL} alt="Header Image" className="w-full object-cover cursor-pointer mb-5 rounded-md h-32" onClick={() => headerFileInput.current?.click()} />
+                            <div className="w-fit h-fit border rounded-md overflow-hidden mb-5">
+                                <Image src={headerPhotoURL} alt="Header Image" className="w-full object-cover cursor-pointer rounded-md h-32" onClick={() => headerFileInput.current?.click()} />
+                            </div>
                         ) : (
                             <div className="w-full h-20 bg-gray-200 flex items-center justify-center cursor-pointer mb-5 rounded-md" onClick={() => headerFileInput.current?.click()}>
                                 <Text>Click to set header image</Text>
@@ -247,7 +251,7 @@ const Settings = () => {
                         )}
                         <div className="flex flex-col lg:flex-row">
                             <div className="flex flex-col">
-                                <Avatar src={photoURL} name={displayName} size="lg" className="cursor-pointer" onClick={() => fileInput.current?.click()} />
+                                <Avatar src={photoURL} name={displayName} size="lg" className="cursor-pointer" onClick={() => avatarFileInput.current?.click()} />
                             </div>
                             <div className='w-full lg:ml-5 mt-3 lg:mt-0'>
                                 <Text className="mb-1">Name</Text>
@@ -302,15 +306,15 @@ const Settings = () => {
             <Modal isOpen={isCropping || croppingHeader} onClose={() => { setIsCropping(false); setCroppingHeader(false); }} isCentered size="xl">
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>Crop Image</ModalHeader>
+                    <ModalHeader>Crop Header Image</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <div className="relative w-full h-[250px]">
                             <Cropper
-                                image={file ? URL.createObjectURL(file) : headerFile ? URL.createObjectURL(headerFile) : undefined}
+                                image={headerFile ? URL.createObjectURL(headerFile) : undefined}
                                 crop={crop}
                                 zoom={zoom}
-                                aspect={20 / 3} // Change aspect ratio to 20:3
+                                aspect={20 / 3} // Change aspect ratio to 20:3 for header
                                 onCropChange={setCrop}
                                 onZoomChange={setZoom}
                                 onCropComplete={onCropComplete}
@@ -321,7 +325,35 @@ const Settings = () => {
                         <Button onClick={() => { setIsCropping(false); setCroppingHeader(false); }} className='mr-3'>
                             Cancel
                         </Button>
-                        <Button colorScheme='blue' onClick={handleCropConfirm}>
+                        <Button colorScheme='blue' onClick={() => handleCropConfirm('header')}>
+                            Confirm
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+            <Modal isOpen={croppingAvatar} onClose={() => setCroppingAvatar(false)} isCentered size="xl">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Crop Icon Image</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <div className="relative w-full h-[250px]">
+                            <Cropper
+                                image={file ? URL.createObjectURL(file) : undefined}
+                                crop={crop}
+                                zoom={zoom}
+                                aspect={1} // Change aspect ratio to 1:1 for avatar
+                                onCropChange={setCrop}
+                                onZoomChange={setZoom}
+                                onCropComplete={onCropComplete}
+                            />
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button onClick={() => setCroppingAvatar(false)} className='mr-3'>
+                            Cancel
+                        </Button>
+                        <Button colorScheme='blue' onClick={() => handleCropConfirm('avatar')}>
                             Confirm
                         </Button>
                     </ModalFooter>

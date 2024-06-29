@@ -151,7 +151,9 @@ const UserPage = () => {
             <Head><title>{user.displayName}</title></Head>
             <Layout>
                 {user.headerPhotoURL && (
-                    <Image src={user.headerPhotoURL} alt="Header Image" className="w-full object-cover mb-5 rounded-md" />
+                    <div className="w-fit h-fit border rounded-md overflow-hidden mb-5">
+                        <Image src={user.headerPhotoURL} alt="Header Image" className="w-full object-cover rounded-md" />
+                    </div>
                 )}
                 <div className="contents lg:flex items-center mt-3 lg:mt-0">
                     <Avatar src={user.photoURL} name={user.displayName} size="lg" />
