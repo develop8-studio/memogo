@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Box, Divider, Flex, IconButton, Stack, useDisclosure, Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Image } from '@chakra-ui/react';
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
-import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch, FiBook, FiLogIn, FiUserPlus, FiFeather } from 'react-icons/fi';
+import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch, FiBook, FiLogIn, FiUserPlus, FiFeather, FiDroplet } from 'react-icons/fi';
 import { IconType } from 'react-icons';
 import { auth } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
@@ -84,6 +84,7 @@ const MobileNav: FC = () => {
               {user && <MobileNavItem icon={FiUserPlus} label="Following" href="/following" />}
               {user && <MobileNavItem icon={FiBookmark} label="Bookmarks" href="bookmarks" />}
               {user && <MobileNavItem icon={FiFeather} label="Editor" href="/editor" />}
+              {user && <MobileNavItem icon={FiDroplet} label="あつまれ しゃちくの森" href="/game" />}
               {/* <MobileNavItem icon={FiSettings} label="Settings" href="/settings" /> */}
             </Stack>
             <Divider className='my-3' />
