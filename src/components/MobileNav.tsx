@@ -84,7 +84,7 @@ const MobileNav: FC = () => {
               {user && <MobileNavItem icon={FiUserPlus} label="Following" href="/following" />}
               {user && <MobileNavItem icon={FiBookmark} label="Bookmarks" href="bookmarks" />}
               {user && <MobileNavItem icon={FiFeather} label="Editor" href="/editor" />}
-              {user && <MobileNavItem icon={FiDroplet} label="あつまれ しゃちくの森" href="/game" />}
+              {user && <MobileNavItem icon={FiDroplet} label="昇格せよ シャチクのモリ" href="/works" />}
               {/* <MobileNavItem icon={FiSettings} label="Settings" href="/settings" /> */}
             </Stack>
             <Divider className='my-3' />

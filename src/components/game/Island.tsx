@@ -104,9 +104,22 @@ const Island = () => {
 
     if (userIsland) {
         return (
-            <Box p={4} bg="white" borderRadius="md" boxShadow="md">
-                {/* <Image src="/game/logo/management.png" className="w-60" /> */}
-                <Box p={4} border="1px" borderColor="gray.200" borderRadius="md">
+            <Box className="p-3 pt-0 bg-white rounded-md border">
+                <div className="w-full flex items-center justify-center">
+                    <Image src="/game/logo/management.png" className="w-60" />
+                </div>
+                <div className="flex">
+                    <Input
+                        placeholder="新しい島の名前を入力してください。"
+                        value={userIsland.name}
+                        onChange={(e) => setUserIsland({ ...userIsland, name: e.target.value })}
+                        className="mr-3"
+                    />
+                    <Button onClick={() => updateIsland(userIsland.id, userIsland.name)} colorScheme='teal'>
+                        Update
+                    </Button>
+                </div>
+                {/* <Box p={4} border="1px" borderColor="gray.200" borderRadius="md">
                     <Text fontSize="lg" fontWeight="bold">{userIsland.name}</Text>
                     <HStack spacing={4} mt={2}>
                         <Input
@@ -118,24 +131,27 @@ const Island = () => {
                             Update
                         </Button>
                     </HStack>
-                </Box>
+                </Box> */}
             </Box>
         );
     }
 
     return (
-        <Box p={4} bg="white" borderRadius="md" boxShadow="md">
-            <Text fontSize="xl" mb={4}>Island Management</Text>
-            <VStack align="stretch">
-                <HStack>
+        <Box className="p-3 pt-0 bg-white rounded-md border">
+            <div className="w-full flex items-center justify-center">
+                <Image src="/game/logo/management.png" className="w-60" />
+            </div>
+            <div className="flex">
                     <Input
                         value={newIslandName}
                         onChange={(e) => setNewIslandName(e.target.value)}
-                        placeholder="New island name"
+                        placeholder="島の名前を入力してください。"
+                        className="mr-3"
                     />
-                    <Button onClick={addIsland}>Add Island</Button>
-                </HStack>
-            </VStack>
+                    <Button onClick={addIsland} colorScheme='teal'>
+                        Create
+                    </Button>
+            </div>
         </Box>
     );
 };

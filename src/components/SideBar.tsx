@@ -56,7 +56,7 @@ const SideBar: React.FC = () => {
                     {user && <MenuItem icon={<FiUserPlus className="text-lg" />} href='/following' />}
                     {user && <MenuItem icon={<FiBookmark className="text-lg" />} href='/bookmarks' />}
                     {user && <MenuItem icon={<FiFeather className="text-lg" />} href='/editor' />}
-                    {user && <MenuItem icon={<FiDroplet className="text-lg" />} href='/game' />}
+                    {user && <MenuItem icon={<FiDroplet className="text-lg" />} href='/works' />}
                     {/* {user && <MenuItem icon={<FiSettings className="text-lg" />} href='/settings' />} */}
                 </div>
                 <div>
