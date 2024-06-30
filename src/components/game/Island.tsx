@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Box, Button, VStack, Text, Input, HStack, Spinner, Image } from '@chakra-ui/react';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
-import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Island {
@@ -12,11 +11,12 @@ interface Island {
 }
 
 const Island = () => {
-    const router = useRouter();
     const [islands, setIslands] = useState<Island[]>([]);
     const [newIslandName, setNewIslandName] = useState<string>('');
     const [userIsland, setUserIsland] = useState<Island | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [creating, setCreating] = useState<boolean>(false);
+    const [updating, setUpdating] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchIslands = async () => {
@@ -58,6 +58,7 @@ const Island = () => {
             return;
         }
         if (newIslandName.trim() && !userIsland) {
+            setCreating(true);
             try {
                 const islandId = uuidv4();
                 await addDoc(collection(db, 'islands'), {
@@ -77,6 +78,8 @@ const Island = () => {
                 }
             } catch (err) {
                 console.error('Failed to add new island.', err);
+            } finally {
+                setCreating(false);
             }
         }
     };
@@ -87,6 +90,7 @@ const Island = () => {
             setLoading(true);
             return;
         }
+        setUpdating(true);
         try {
             const islandDoc = doc(db, 'islands', id);
             await updateDoc(islandDoc, {
@@ -95,6 +99,8 @@ const Island = () => {
             setUserIsland((prev) => (prev ? { ...prev, name } : null));
         } catch (err) {
             console.error('Failed to update island.', err);
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -106,7 +112,7 @@ const Island = () => {
         return (
             <Box className="p-3 pt-0 bg-white rounded-md border">
                 <div className="w-full flex items-center justify-center">
-                    <Image src="/game/logo/management.png" className="w-60" />
+                    <Image src="/game/logo/management.png" className="w-[200px]" />
                 </div>
                 <div className="flex">
                     <Input
@@ -115,23 +121,11 @@ const Island = () => {
                         onChange={(e) => setUserIsland({ ...userIsland, name: e.target.value })}
                         className="mr-3"
                     />
-                    <Button onClick={() => updateIsland(userIsland.id, userIsland.name)} colorScheme='teal'>
+                    <Button onClick={() => updateIsland(userIsland.id, userIsland.name)} colorScheme='teal' isLoading={updating}>
                         Update
                     </Button>
                 </div>
-                {/* <Box p={4} border="1px" borderColor="gray.200" borderRadius="md">
-                    <Text fontSize="lg" fontWeight="bold">{userIsland.name}</Text>
-                    <HStack spacing={4} mt={2}>
-                        <Input
-                            placeholder="New name"
-                            value={userIsland.name}
-                            onChange={(e) => setUserIsland({ ...userIsland, name: e.target.value })}
-                        />
-                        <Button onClick={() => updateIsland(userIsland.id, userIsland.name)}>
-                            Update
-                        </Button>
-                    </HStack>
-                </Box> */}
+                <Text className="text-xs text-slate-500 mt-1.5">ID: {userIsland.id}</Text>
             </Box>
         );
     }
@@ -139,18 +133,18 @@ const Island = () => {
     return (
         <Box className="p-3 pt-0 bg-white rounded-md border">
             <div className="w-full flex items-center justify-center">
-                <Image src="/game/logo/management.png" className="w-60" />
+                <Image src="/game/logo/management.png" className="w-[200px]" />
             </div>
             <div className="flex">
-                    <Input
-                        value={newIslandName}
-                        onChange={(e) => setNewIslandName(e.target.value)}
-                        placeholder="島の名前を入力してください。"
-                        className="mr-3"
-                    />
-                    <Button onClick={addIsland} colorScheme='teal'>
-                        Create
-                    </Button>
+                <Input
+                    value={newIslandName}
+                    onChange={(e) => setNewIslandName(e.target.value)}
+                    placeholder="島の名前を入力してください。"
+                    className="mr-3"
+                />
+                <Button onClick={addIsland} colorScheme='teal' isLoading={creating}>
+                    Create
+                </Button>
             </div>
         </Box>
     );

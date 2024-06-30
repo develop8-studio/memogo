@@ -49,12 +49,14 @@ const Login = () => {
                     placeholder="Password"
                     className="w-full mb-5"
                 />
-                <Button onClick={handleLogin} colorScheme='blue' className="mb-5">
-                    Login
-                </Button>
-                <Button onClick={handleGoogleSignIn} colorScheme='gray' className="ml-3 mb-5">
-                    <FaGoogle className="mr-1.5 text-gray-300" />Login with Google
-                </Button>
+                <div className="flex flex-col md:flex-row">
+                    <Button onClick={handleLogin} colorScheme='blue' className="mb-5">
+                        Login
+                    </Button>
+                    <Button onClick={handleGoogleSignIn} colorScheme='gray' className="md:ml-3 mb-5">
+                        <FaGoogle className="mr-1.5 text-gray-300" />Login with Google
+                    </Button>
+                </div>
                 <Text>
                     Don&apos;t have an account?{' '}
                     <Link color="blue.500">

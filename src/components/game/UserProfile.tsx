@@ -8,7 +8,7 @@ interface UserProfileProps {
 
 const UserProfile = ({ displayName, photoURL, bio }: UserProfileProps) => {
     return (
-        <Box className="border rounded-md p-3 flex items-center space-x-5 mb-10">
+        <Box className="border rounded-md p-3 flex items-center space-x-5">
             <div className="w-fit h-fit  rounded-full">
                 <Avatar src={photoURL} name={displayName} size="lg" />
             </div>

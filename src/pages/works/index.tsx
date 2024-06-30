@@ -8,6 +8,7 @@ import Layout from '@/components/Layout';
 import Head from 'next/head';
 import UserProfile from '@/components/game/UserProfile';
 import Island from '@/components/game/Island';
+import View from '@/components/game/View'; // 新しく作成したコンポーネントをインポート
 
 const Game = () => {
     useAuthRedirect();
@@ -39,12 +40,16 @@ const Game = () => {
                 <title>昇格せよ シャチクのモリ</title>
             </Head>
             <Layout>
-                <div className="w-full flex items-center justify-center border rounded-md mb-5">
-                    <Image src="/game/title.png" className="w-[300px]" />
-                </div>
-                {user && <UserProfile photoURL={user.photoURL} displayName={user.displayName} bio={user.bio} />}
-                <div>
+
+                <div className="space-y-5 mb-10">
+                    <div className="w-full flex items-center justify-center border rounded-md">
+                        <Image src="/game/title.png" className="w-[300px]" />
+                    </div>
+                    {user && <UserProfile photoURL={user.photoURL} displayName={user.displayName} bio={user.bio} />}
                     <Island />
+                </div>
+                <div>
+                    <View />
                 </div>
             </Layout>
         </div>

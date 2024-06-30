@@ -68,12 +68,14 @@ const Register = () => {
                     placeholder="Password"
                     className="w-full mb-5"
                 />
-                <Button onClick={handleRegister} colorScheme='teal' className="mb-5">
-                    Register
-                </Button>
-                <Button onClick={handleGoogleSignIn} colorScheme='gray' className="ml-3 mb-5">
-                    <FaGoogle className="mr-1.5 text-gray-300" />Register with Google
-                </Button>
+                <div className="flex flex-col md:flex-row">
+                    <Button onClick={handleRegister} colorScheme='teal' className="mb-5 md:mb-0">
+                        Register
+                    </Button>
+                    <Button onClick={handleGoogleSignIn} colorScheme='gray' className="md:ml-3 mb-5">
+                        <FaGoogle className="mr-1.5 text-gray-300" />Register with Google
+                    </Button>
+                </div>
                 <Text>
                     Already have an account?{' '}
                     <Link color="blue.500">
