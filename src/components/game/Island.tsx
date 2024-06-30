@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, VStack, Text, Input, HStack, Spinner } from '@chakra-ui/react';
+import { Box, Button, VStack, Text, Input, HStack, Spinner, Image } from '@chakra-ui/react';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
@@ -105,7 +105,7 @@ const Island = () => {
     if (userIsland) {
         return (
             <Box p={4} bg="white" borderRadius="md" boxShadow="md">
-                <Text fontSize="xl" mb={4}>My Island</Text>
+                {/* <Image src="/game/logo/management.png" className="w-60" /> */}
                 <Box p={4} border="1px" borderColor="gray.200" borderRadius="md">
                     <Text fontSize="lg" fontWeight="bold">{userIsland.name}</Text>
                     <HStack spacing={4} mt={2}>
