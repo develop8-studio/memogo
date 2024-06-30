@@ -157,14 +157,14 @@ const View = () => {
     const mapSize = { width: 800, height: 600 };
 
     if (!hasIsland) {
-        return <div>島が見つかりません。島を作成してください。</div>;
+        return <div className="flex items-center justify-center text-slate-500">島が見つかりません。島を作成してください。</div>;
     }
 
     return (
         <>
             <div className="flex items-center mb-3">
                 <Button colorScheme='blue' onClick={toggleFullscreen}>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</Button>
-                <Text className="text-slate-500 text-xs ml-2.5">モバイル機器でのフルスクリーンはお勧め致しません。</Text>
+                <Text className="text-slate-500 text-xs mx-2.5">モバイル機器でのフルスクリーンはお勧め致しません。</Text>
                 <Button colorScheme={isVisiting ? 'red' : 'green'} onClick={isVisiting ? leaveIsland : onOpen} className="ml-auto">{isVisiting ? '帰る' : '島を訪問'}</Button>
             </div>
             <AlertDialog
@@ -198,8 +198,7 @@ const View = () => {
             <div ref={gameAreaRef} className="relative flex justify-center items-center w-full h-full bg-white">
                 <div
                     ref={containerRef}
-                    className="relative overflow-hidden border rounded-md bg-green-300"
-                    style={{ width: `${mapSize.width}px`, height: `${mapSize.height}px` }}
+                    className="relative overflow-hidden border rounded-md bg-green-300 w-full h-[600px]"
                 >
                     {/* 木の配置 */}
                     {[
@@ -314,7 +313,7 @@ const View = () => {
                 {/* 現在のお金と島の名前 */}
                 <div className="absolute top-0 right-0 m-3 border bg-white rounded-md p-3">
                     <Text className="text-black font-bold">{money}円</Text>
-                    <Text className="text-black font-bold mt-2">{islandName}</Text>
+                    <Text className="text-slate-500 text-xs mt-1">{islandName}</Text>
                 </div>
                 {/* スマホ操作用の矢印ボタン */}
                 <div className="absolute bg-white w-[75px] h-[75px] bottom-5 left-5 md:hidden rounded-full items-center flex justify-center">
