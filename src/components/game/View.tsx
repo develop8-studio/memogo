@@ -1,12 +1,20 @@
-import { Button, Text } from '@chakra-ui/react';
+import { Button, Text, Input, useDisclosure, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, AlertDialogCloseButton } from '@chakra-ui/react';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useKey } from 'react-use';
 import { FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { collection, doc, getDoc } from 'firebase/firestore';
+import { db } from '@/firebase/firebaseConfig';
 
 const View = () => {
     const [position, setPosition] = useState({ x: 400, y: 300 });
     const [tubukichiPosition, setTubukichiPosition] = useState({ x: 200, y: 200 });
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showDialog, setShowDialog] = useState(false);
+    const [money, setMoney] = useState(1000); // 初期のお金の設定
+    const [otherIslandId, setOtherIslandId] = useState('');
+    const [otherPlayer, setOtherPlayer] = useState<{ displayName: string, position: { x: number, y: number } } | null>(null);
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    const cancelRef = useRef<HTMLButtonElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const gameAreaRef = useRef<HTMLDivElement>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -53,6 +61,17 @@ const View = () => {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (
+            Math.abs(position.x - tubukichiPosition.x) < 50 &&
+            Math.abs(position.y - tubukichiPosition.y) < 50
+        ) {
+            setShowDialog(true);
+        } else {
+            setShowDialog(false);
+        }
+    }, [position, tubukichiPosition]);
+
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
             gameAreaRef.current?.requestFullscreen().catch(err => console.log(err));
@@ -75,14 +94,66 @@ const View = () => {
         }
     };
 
+    const visitIsland = async () => {
+        if (otherIslandId.trim() === '') return;
+
+        try {
+            const docRef = doc(collection(db, 'islands'), otherIslandId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const islandData = docSnap.data();
+                if (islandData) {
+                    setOtherPlayer({
+                        displayName: islandData.ownerName,
+                        position: { x: 100, y: 100 }
+                    });
+                }
+            } else {
+                console.log('No such island!');
+            }
+        } catch (error) {
+            console.error('Error visiting island:', error);
+        }
+        onClose();
+    };
+
     const mapSize = { width: 800, height: 600 };
 
     return (
         <>
-            <div className="flex items-center">
-                <Button colorScheme='blue' onClick={toggleFullscreen} className="mb-3">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</Button>
+            <div className="flex items-center mb-3">
+                <Button colorScheme='blue' onClick={toggleFullscreen}>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</Button>
                 <Text className="text-slate-500 text-xs ml-2.5">モバイル機器でのフルスクリーンはお勧め致しません。</Text>
+                <Button colorScheme='green' onClick={onOpen} className="ml-auto">島を訪問</Button>
             </div>
+            <AlertDialog
+                motionPreset='slideInBottom'
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+                isOpen={isOpen}
+                isCentered
+            >
+                <AlertDialogOverlay />
+                <AlertDialogContent>
+                    <AlertDialogHeader>島のIDを入力</AlertDialogHeader>
+                    <AlertDialogCloseButton />
+                    <AlertDialogBody>
+                        <Input
+                            placeholder="島のIDを入力してください"
+                            value={otherIslandId}
+                            onChange={(e) => setOtherIslandId(e.target.value)}
+                        />
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                        <Button ref={cancelRef} onClick={onClose}>
+                            キャンセル
+                        </Button>
+                        <Button colorScheme='blue' ml={3} onClick={visitIsland}>
+                            訪問
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <div ref={gameAreaRef} className="relative flex justify-center items-center w-full h-full bg-white">
                 <div
                     ref={containerRef}
@@ -92,7 +163,6 @@ const View = () => {
                     {/* 木の配置 */}
                     {[
                         { x: 200, y: 100 },
-                        { x: 400, y: 300 },
                         { x: 600, y: 200 }
                     ].map((tree, index) => (
                         <div
@@ -133,6 +203,26 @@ const View = () => {
                     >
                         つぶきち
                     </div>
+
+                    {/* 他のプレイヤー */}
+                    {otherPlayer && (
+                        <div
+                            style={{
+                                top: `${otherPlayer.position.y}px`,
+                                left: `${otherPlayer.position.x}px`
+                            }}
+                            className="transition-all absolute h-[50px] w-[50px] text-white font-bold flex items-center justify-center bg-purple-500 rounded-md"
+                        >
+                            {otherPlayer.displayName}
+                        </div>
+                    )}
+
+                    {/* つぶきちとの会話ダイアログ */}
+                    {showDialog && (
+                        <div className="absolute bottom-0 left-0 w-full bg-white bg-opacity-75 p-4">
+                            <Text>つぶきち: こんにちは！ 何かお手伝いできることはありますか？</Text>
+                        </div>
+                    )}
                 </div>
                 {/* ミニマップ */}
                 <div className="absolute top-0 left-0 m-3 border bg-white rounded-md" style={{ width: '150px', height: '112.5px' }}>
@@ -167,6 +257,10 @@ const View = () => {
                         >
                         </div>
                     </div>
+                </div>
+                {/* 現在のお金 */}
+                <div className="absolute top-0 right-0 m-3 border bg-white rounded-md p-3">
+                    <Text className="text-black font-bold">{money}円</Text>
                 </div>
                 {/* スマホ操作用の矢印ボタン */}
                 <div className="absolute bg-white w-[75px] h-[75px] bottom-5 left-5 md:hidden rounded-full items-center flex justify-center">
