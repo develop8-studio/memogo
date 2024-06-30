@@ -2,8 +2,8 @@ import { Button, Text, Input, useDisclosure, AlertDialog, AlertDialogBody, Alert
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useKey } from 'react-use';
 import { FaArrowUp, FaArrowDown, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
-import { collection, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseConfig';
+import { collection, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
+import { db, auth } from '@/firebase/firebaseConfig';
 
 const View = () => {
     const [position, setPosition] = useState({ x: 400, y: 300 });
@@ -13,6 +13,10 @@ const View = () => {
     const [money, setMoney] = useState(1000); // 初期のお金の設定
     const [otherIslandId, setOtherIslandId] = useState('');
     const [otherPlayer, setOtherPlayer] = useState<{ displayName: string, position: { x: number, y: number } } | null>(null);
+    const [isVisiting, setIsVisiting] = useState(false);
+    const [hasIsland, setHasIsland] = useState(false);
+    const [islandName, setIslandName] = useState('');
+    const [visitingPlayerName, setVisitingPlayerName] = useState('');
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = useRef<HTMLButtonElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +76,26 @@ const View = () => {
         }
     }, [position, tubukichiPosition]);
 
+    const checkIsland = async () => {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        const q = query(collection(db, 'islands'), where('owner', '==', currentUser.uid));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const islandData = querySnapshot.docs[0].data();
+            setHasIsland(true);
+            setIslandName(islandData.name);
+        } else {
+            setHasIsland(false);
+        }
+    };
+
+    useEffect(() => {
+        checkIsland();
+    }, []);
+
     const toggleFullscreen = () => {
         if (!document.fullscreenElement) {
             gameAreaRef.current?.requestFullscreen().catch(err => console.log(err));
@@ -103,10 +127,16 @@ const View = () => {
             if (docSnap.exists()) {
                 const islandData = docSnap.data();
                 if (islandData) {
+                    const ownerDoc = await getDoc(doc(db, 'users', islandData.owner));
+                    const ownerData = ownerDoc.data();
+
                     setOtherPlayer({
-                        displayName: islandData.ownerName,
+                        displayName: ownerData?.displayName || 'Unknown',
                         position: { x: 100, y: 100 }
                     });
+                    setIslandName(islandData.name);
+                    setVisitingPlayerName(ownerData?.displayName || 'Unknown');
+                    setIsVisiting(true);
                 }
             } else {
                 console.log('No such island!');
@@ -117,14 +147,25 @@ const View = () => {
         onClose();
     };
 
+    const leaveIsland = () => {
+        setOtherPlayer(null);
+        setIsVisiting(false);
+        setOtherIslandId('');
+        checkIsland(); // リロードせずにユーザーと島の情報を再取得
+    };
+
     const mapSize = { width: 800, height: 600 };
+
+    if (!hasIsland) {
+        return <div>島が見つかりません。島を作成してください。</div>;
+    }
 
     return (
         <>
             <div className="flex items-center mb-3">
                 <Button colorScheme='blue' onClick={toggleFullscreen}>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</Button>
                 <Text className="text-slate-500 text-xs ml-2.5">モバイル機器でのフルスクリーンはお勧め致しません。</Text>
-                <Button colorScheme='green' onClick={onOpen} className="ml-auto">島を訪問</Button>
+                <Button colorScheme={isVisiting ? 'red' : 'green'} onClick={isVisiting ? leaveIsland : onOpen} className="ml-auto">{isVisiting ? '帰る' : '島を訪問'}</Button>
             </div>
             <AlertDialog
                 motionPreset='slideInBottom'
@@ -256,11 +297,24 @@ const View = () => {
                             className="transition-all absolute h-[9.375px] w-[9.375px] text-white font-bold flex items-center justify-center bg-blue-500 rounded-md"
                         >
                         </div>
+
+                        {/* 他のプレイヤーの位置 */}
+                        {otherPlayer && (
+                            <div
+                                style={{
+                                    top: `${otherPlayer.position.y / 5.33}px`,
+                                    left: `${otherPlayer.position.x / 5.33}px`
+                                }}
+                                className="transition-all absolute h-[9.375px] w-[9.375px] text-white font-bold flex items-center justify-center bg-purple-500 rounded-md"
+                            >
+                            </div>
+                        )}
                     </div>
                 </div>
-                {/* 現在のお金 */}
+                {/* 現在のお金と島の名前 */}
                 <div className="absolute top-0 right-0 m-3 border bg-white rounded-md p-3">
                     <Text className="text-black font-bold">{money}円</Text>
+                    <Text className="text-black font-bold mt-2">{islandName}</Text>
                 </div>
                 {/* スマホ操作用の矢印ボタン */}
                 <div className="absolute bg-white w-[75px] h-[75px] bottom-5 left-5 md:hidden rounded-full items-center flex justify-center">
