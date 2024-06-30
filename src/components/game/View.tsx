@@ -27,8 +27,8 @@ const View = () => {
         setPosition((prev) => {
             let newX = prev.x + dx;
             let newY = prev.y + dy;
-            newX = Math.max(0, Math.min(newX, 750)); // 限界を設定
-            newY = Math.max(0, Math.min(newY, 550)); // 限界を設定
+            newX = Math.max(0, Math.min(newX, 800)); // 限界を設定
+            newY = Math.max(0, Math.min(newY, 600)); // 限界を設定
             return { x: newX, y: newY };
         });
     }, []);
@@ -57,8 +57,8 @@ const View = () => {
             const dx = (Math.random() - 0.5) * 10;
             const dy = (Math.random() - 0.5) * 10;
             setTubukichiPosition((prev) => ({
-                x: Math.max(0, Math.min(prev.x + dx, 750)), // 限界を設定
-                y: Math.max(0, Math.min(prev.y + dy, 550))  // 限界を設定
+                x: Math.max(0, Math.min(prev.x + dx, 800)), // 限界を設定
+                y: Math.max(0, Math.min(prev.y + dy, 600))  // 限界を設定
             }));
         }, 500);
 
@@ -156,6 +156,17 @@ const View = () => {
 
     const mapSize = { width: 800, height: 600 };
 
+    const getScale = () => {
+        if (containerRef.current) {
+            const widthScale = containerRef.current.clientWidth / mapSize.width;
+            const heightScale = containerRef.current.clientHeight / mapSize.height;
+            return Math.min(widthScale, heightScale);
+        }
+        return 1;
+    };
+
+    const scale = getScale();
+
     if (!hasIsland) {
         return <div className="flex items-center justify-center text-slate-500">島が見つかりません。島を作成してください。</div>;
     }
@@ -198,7 +209,8 @@ const View = () => {
             <div ref={gameAreaRef} className="relative flex justify-center items-center w-full h-full bg-white">
                 <div
                     ref={containerRef}
-                    className="relative overflow-hidden border rounded-md bg-green-300 w-full h-[600px]"
+                    className="relative overflow-hidden border rounded-md bg-green-300 w-full h-full"
+                    style={{ aspectRatio: '4 / 3' }}
                 >
                     {/* 木の配置 */}
                     {[
@@ -207,7 +219,7 @@ const View = () => {
                     ].map((tree, index) => (
                         <div
                             key={index}
-                            style={{ top: `${tree.y}px`, left: `${tree.x}px` }}
+                            style={{ top: `${tree.y * scale}px`, left: `${tree.x * scale}px`, transform: `scale(${scale})` }}
                             className="absolute w-[50px] h-[50px] bg-emerald-500 flex items-center justify-center text-white rounded-md font-bold"
                         >
                             木
@@ -216,7 +228,7 @@ const View = () => {
 
                     {/* まめきち達のテント */}
                     <div
-                        style={{ top: '200px', left: '700px' }}
+                        style={{ top: `${200 * scale}px`, left: `${700 * scale}px`, transform: `scale(${scale})` }}
                         className="absolute w-[50px] h-[50px] bg-blue-500 flex items-center justify-center text-white rounded-md font-bold"
                     >
                         テント
@@ -225,8 +237,9 @@ const View = () => {
                     {/* キャラクター */}
                     <div
                         style={{
-                            top: `${position.y}px`,
-                            left: `${position.x}px`
+                            top: `${position.y * scale}px`,
+                            left: `${position.x * scale}px`,
+                            transform: `scale(${scale})`
                         }}
                         className="transition-all absolute h-[50px] w-[50px] text-white font-bold flex items-center justify-center bg-red-500 rounded-md"
                     >
@@ -236,8 +249,9 @@ const View = () => {
                     {/* つぶきち */}
                     <div
                         style={{
-                            top: `${tubukichiPosition.y}px`,
-                            left: `${tubukichiPosition.x}px`
+                            top: `${tubukichiPosition.y * scale}px`,
+                            left: `${tubukichiPosition.x * scale}px`,
+                            transform: `scale(${scale})`
                         }}
                         className="transition-all absolute h-[50px] w-[50px] text-white font-bold flex items-center justify-center bg-yellow-500 rounded-md text-xs"
                     >
@@ -248,8 +262,9 @@ const View = () => {
                     {otherPlayer && (
                         <div
                             style={{
-                                top: `${otherPlayer.position.y}px`,
-                                left: `${otherPlayer.position.x}px`
+                                top: `${otherPlayer.position.y * scale}px`,
+                                left: `${otherPlayer.position.x * scale}px`,
+                                transform: `scale(${scale})`
                             }}
                             className="transition-all absolute h-[50px] w-[50px] text-white font-bold flex items-center justify-center bg-purple-500 rounded-md"
                         >
