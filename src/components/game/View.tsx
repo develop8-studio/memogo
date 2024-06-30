@@ -275,7 +275,7 @@ const View = () => {
                     {/* つぶきちとの会話ダイアログ */}
                     {showDialog && (
                         <div className="absolute bottom-0 left-0 w-full bg-white bg-opacity-75 p-4">
-                            <Text>つぶきち: こんにちは！ 何かお手伝いできることはありますか？</Text>
+                            <Text>つぶきち: 賃金上がんねぇ...</Text>
                         </div>
                     )}
                 </div>
