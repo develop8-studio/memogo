@@ -4,21 +4,11 @@ import { db, auth, storage } from '@/firebase/firebaseConfig';
 import { doc, getDoc, updateDoc, deleteDoc, query, where, getDocs, collection } from 'firebase/firestore';
 import { deleteUser, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider } from '@chakra-ui/react';
+import { Button, Input, Text, Textarea, Image, Spinner, Avatar, Heading, Divider, useToast, useDisclosure, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 import Head from 'next/head';
 import Cropper from 'react-easy-crop';
-import {
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
-    AlertDialogCloseButton,
-    useDisclosure,
-} from '@chakra-ui/react';
 import getCroppedImg from "@/utils/cropImage";
 import { FiTwitter } from 'react-icons/fi';
 
@@ -29,36 +19,29 @@ const Settings = () => {
     const [userID, setUserID] = useState('');
     const [bio, setBio] = useState('');
     const [file, setFile] = useState<File | null>(null);
-    const [headerFile, setHeaderFile] = useState<File | null>(null); // Header file state
+    const [headerFile, setHeaderFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [photoURL, setPhotoURL] = useState('');
-    const [headerPhotoURL, setHeaderPhotoURL] = useState(''); // Header photo URL state
-    const [dialogMessage, setDialogMessage] = useState('');
+    const [headerPhotoURL, setHeaderPhotoURL] = useState('');
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
     const [isCropping, setIsCropping] = useState(false);
-    const [croppingHeader, setCroppingHeader] = useState(false); // State to determine which image is being cropped
-    const [croppingAvatar, setCroppingAvatar] = useState(false); // State to determine which image is being cropped
+    const [croppingHeader, setCroppingHeader] = useState(false);
+    const [croppingAvatar, setCroppingAvatar] = useState(false);
     const [loading, setLoading] = useState(true);
     const [twitter, setTwitter] = useState('');
     const [userIDError, setUserIDError] = useState('');
 
-    const { isOpen, onOpen, onClose } = useDisclosure();
-    const {
-        isOpen: isDeleteOpen,
-        onOpen: onDeleteOpen,
-        onClose: onDeleteClose
-    } = useDisclosure();
-
+    const toast = useToast();
+    const { isOpen: isDeleteDialogOpen, onOpen: onOpenDeleteDialog, onClose: onCloseDeleteDialog } = useDisclosure();
     const cancelRef = useRef(null);
-    const deleteCancelRef = useRef(null);
 
     const currentUser = auth.currentUser;
     const router = useRouter();
     const fileInput = useRef<HTMLInputElement | null>(null);
-    const headerFileInput = useRef<HTMLInputElement | null>(null); // Header file input ref
-    const avatarFileInput = useRef<HTMLInputElement | null>(null); // Avatar file input ref
+    const headerFileInput = useRef<HTMLInputElement | null>(null);
+    const avatarFileInput = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -72,8 +55,8 @@ const Settings = () => {
                     setUserID(userData.userID || '');
                     setBio(userData.bio);
                     setPhotoURL(userData.photoURL || '');
-                    setHeaderPhotoURL(userData.headerPhotoURL || ''); // Set header photo URL state
-                    setTwitter(userData.twitter || ''); // Set the Twitter state
+                    setHeaderPhotoURL(userData.headerPhotoURL || '');
+                    setTwitter(userData.twitter || '');
                 }
                 setLoading(false);
             }
@@ -122,9 +105,21 @@ const Settings = () => {
                     setFile(null);
                 }
                 setUploading(false);
+                toast({
+                    title: `${type === 'header' ? 'Header' : 'Profile'} image updated successfully!`,
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
             }
         } catch (error) {
             console.error(error);
+            toast({
+                title: `Failed to update ${type === 'header' ? 'header' : 'profile'} image.`,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
 
@@ -150,42 +145,57 @@ const Settings = () => {
             const updatedData: { [key: string]: any } = {
                 displayName,
                 bio,
-                twitter, // Add the Twitter account ID to the updated data
+                twitter,
                 userID,
             };
 
             await updateDoc(docRef, updatedData);
 
-            setDialogMessage('Profile updated!');
-            onOpen();
+            toast({
+                title: "Profile updated successfully!",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
 
-    const confirmDeleteAccount = async () => {
-        onDeleteOpen();
+    const confirmDeleteAccount = () => {
+        onOpenDeleteDialog();
     };
 
     const deleteAccount = async () => {
         if (currentUser) {
             await deleteDoc(doc(db, 'users', currentUser.uid));
             await deleteUser(currentUser);
-            setDialogMessage('Account deleted!');
-            onOpen();
+            toast({
+                title: "Account deleted successfully!",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
             router.push('/register');
         }
-        onDeleteClose();
     };
 
     const linkGoogleAccount = async () => {
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
-            setDialogMessage('Google account linked!');
-            onOpen();
+            toast({
+                title: "Google account linked successfully!",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
         } catch (error) {
             console.error(error);
-            setDialogMessage('Failed to link Google account!');
-            onOpen();
+            toast({
+                title: "Failed to link Google account.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
         }
     };
 
@@ -193,12 +203,20 @@ const Settings = () => {
         if (currentUser?.email) {
             try {
                 await sendPasswordResetEmail(auth, currentUser.email);
-                setDialogMessage('Password reset email sent!');
-                onOpen();
+                toast({
+                    title: "Password reset email sent successfully!",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
             } catch (error) {
                 console.error(error);
-                setDialogMessage('Failed to send password reset email!');
-                onOpen();
+                toast({
+                    title: "Failed to send password reset email.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
             }
         }
     };
@@ -211,12 +229,20 @@ const Settings = () => {
                 const docRef = doc(db, 'users', currentUser.uid);
                 await updateDoc(docRef, { headerPhotoURL: '' });
                 setHeaderPhotoURL('');
-                setDialogMessage('Header image deleted successfully!');
-                onOpen();
+                toast({
+                    title: "Header image deleted successfully!",
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
             } catch (error) {
                 console.error(error);
-                setDialogMessage('Failed to delete header image.');
-                onOpen();
+                toast({
+                    title: "Failed to delete header image.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
             }
         }
     };
@@ -323,7 +349,7 @@ const Settings = () => {
                                 image={headerFile ? URL.createObjectURL(headerFile) : undefined}
                                 crop={crop}
                                 zoom={zoom}
-                                aspect={20 / 3} // Change aspect ratio to 20:3 for header
+                                aspect={20 / 3}
                                 onCropChange={setCrop}
                                 onZoomChange={setZoom}
                                 onCropComplete={onCropComplete}
@@ -351,7 +377,7 @@ const Settings = () => {
                                 image={file ? URL.createObjectURL(file) : undefined}
                                 crop={crop}
                                 zoom={zoom}
-                                aspect={1} // Change aspect ratio to 1:1 for avatar
+                                aspect={1}
                                 onCropChange={setCrop}
                                 onZoomChange={setZoom}
                                 onCropComplete={onCropComplete}
@@ -369,31 +395,9 @@ const Settings = () => {
                 </ModalContent>
             </Modal>
             <AlertDialog
-                isOpen={isOpen}
+                isOpen={isDeleteDialogOpen}
                 leastDestructiveRef={cancelRef}
-                onClose={onClose}
-                isCentered
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader fontSize='lg' fontWeight='bold'>
-                            {dialogMessage.includes('deleted') ? 'Delete Account' : 'Profile Update'}
-                        </AlertDialogHeader>
-                        <AlertDialogBody>
-                            {dialogMessage}
-                        </AlertDialogBody>
-                        <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={onClose}>
-                                OK
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
-            <AlertDialog
-                isOpen={isDeleteOpen}
-                leastDestructiveRef={deleteCancelRef}
-                onClose={onDeleteClose}
+                onClose={onCloseDeleteDialog}
                 isCentered
             >
                 <AlertDialogOverlay>
@@ -405,7 +409,7 @@ const Settings = () => {
                             Are you sure? You can&apos;t undo this action afterwards.
                         </AlertDialogBody>
                         <AlertDialogFooter>
-                            <Button ref={deleteCancelRef} onClick={onDeleteClose}>
+                            <Button ref={cancelRef} onClick={onCloseDeleteDialog}>
                                 Cancel
                             </Button>
                             <Button colorScheme='red' onClick={deleteAccount} ml={3}>

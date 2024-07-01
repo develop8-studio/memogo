@@ -1,54 +1,63 @@
-import Layout from "@/components/Layout"
-import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Card, CardHeader, Center, Divider, Heading, Image, Input, ListItem, OrderedList, Text } from "@chakra-ui/react"
+import Layout from "@/components/Layout";
+import {
+  Alert,
+  AlertIcon,
+  Link,
+  Heading,
+  Text,
+  OrderedList,
+  ListItem,
+  Divider,
+  Image,
+  AlertDescription,
+} from "@chakra-ui/react";
 
 export default function Home() {
   return (
     <>
-      <div className="flex flex-col w-full min-h-screen space-y-2.5 p-3">
-        {/* <Layout flex={true}>
-          <Input placeholder="検索したいワードを入力..." />
-          <Button colorScheme="teal" className="ml-2.5">検索</Button>
-        </Layout> */}
+      <div className="container mx-auto my-10">
         <Layout>
-          <Alert status="warning" className="rounded-md mb-3">
+          <Alert status='info' className="mb-5">
             <AlertIcon />
-            <AlertTitle>この記事は投稿されてから3年以上が経過しています</AlertTitle>
+            アカウントIDの仕様が変更されました。
           </Alert>
+          <Heading as="h1" size="2xl" mb={6}>MemoGo</Heading>
+
+          <Divider className="my-5" />
+
+          <Heading as="h2" size="xl" mt={8} mb={4}>Welcome to MemoGo</Heading>
+          <Text mb={4}>
+            MemoGo is your go-to platform for all your blogging needs. Whether you are an individual looking to share your thoughts or a business wanting to connect with your audience, MemoGo has the tools you need.
+          </Text>
+
+          <Heading as="h3" size="lg" mt={8} mb={4}>Features</Heading>
+          <OrderedList spacing={3} mb={4}>
+            <ListItem>
+              <Text fontWeight="bold">User-Friendly Editor:</Text> Our intuitive editor makes it easy to create and publish blog posts.
+            </ListItem>
+            <ListItem>
+              <Text fontWeight="bold">Community Engagement:</Text> Connect with other bloggers and readers through comments and social sharing.
+            </ListItem>
+            <ListItem>
+              <Text fontWeight="bold">Responsive Design:</Text> Your blog will look great on any device, from desktops to smartphones.
+            </ListItem>
+          </OrderedList>
+
+          <Heading as="h3" size="lg" mt={8} mb={4}>Getting Started</Heading>
+          <Text mb={4}>
+            To get started, simply <Link href="/register" color="teal.500">create an account</Link> and start blogging! If you already have an account, <Link href="/login" color="teal.500">log in here</Link>.
+          </Text>
+
+          <Divider className="my-5" />
+
+          <Heading as="h3" size="lg" mt={8} mb={4}>Support</Heading>
+          <Text mb={4}>
+            If you have any questions or need help, visit our <Link href="/support" color="teal.500">support page</Link>.
+          </Text>
+
+          <Image src="/boy.png" className="rounded-md mt-5" />
         </Layout>
-        <div className="space-y-[30px]">
-          <Layout>
-            <Center className="flex flex-col">
-              <Image src='/top-image/man-smile.png' alt='' className="rounded-md mb-3 max-h-[250px]" />
-              <Heading className="mb-2.5">全てを演繹推論で完結させる男</Heading>
-              <Text>人はいずれ死ぬ、あなたは人である、つまりあなたはいずれ死ぬ。</Text>
-            </Center>
-          </Layout>
-          <Layout>
-            <Heading size="lg" className="mb-2.5">トマトはなぜ赤色なのか</Heading>
-            <OrderedList>
-              <ListItem>色は物質の特定の特性によって決まる。</ListItem>
-              <ListItem>トマトはリコピンという色素を含む。</ListItem>
-            </OrderedList>
-            <Text className="font-bold my-2.5">トマトはリコピンという色素によって赤色である。</Text>
-          </Layout>
-          <Layout>
-            <Heading size="lg" className="mb-2.5">人はなぜ生まれなぜ死んでいくのか</Heading>
-            <OrderedList>
-              <ListItem>すべての生物は細胞分裂によって生まれ、最終的には老化と死を迎える。</ListItem>
-              <ListItem>人間も生物の一種である。</ListItem>
-            </OrderedList>
-            <Text className="font-bold my-2.5">人間は細胞分裂によって生まれ、老化と死を迎える。</Text>
-          </Layout>
-          <Layout>
-            <Heading size="lg" className="mb-2.5">AIはなぜ人間に勝てないのか</Heading>
-            <OrderedList>
-              <ListItem>AIは人間によってプログラムされ、その能力は人間の知識と技術に依存する。</ListItem>
-              <ListItem>AIの判断力や創造力は、人間の経験や直感に完全には及ばない。</ListItem>
-            </OrderedList>
-            <Text className="font-bold my-2.5">AIはその判断力や創造力の限界から、人間に勝てない場合がある。</Text>
-          </Layout>
-        </div>
       </div>
     </>
-  )
+  );
 }
