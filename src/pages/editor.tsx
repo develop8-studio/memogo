@@ -10,19 +10,20 @@ import {
     Input,
     Textarea,
     useClipboard,
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogContent,
-    AlertDialogOverlay,
+    useToast,
     Text,
     Spinner,
     Tabs,
     TabList,
     Tab,
     TabPanels,
-    TabPanel
+    TabPanel,
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogContent,
+    AlertDialogOverlay,
 } from '@chakra-ui/react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -38,12 +39,11 @@ const Editor = () => {
     const [userId, setUserId] = useState<string | null>(null);
     const [imageUrl, setImageUrl] = useState<string>('');
     const { onCopy, hasCopied } = useClipboard(imageUrl);
-    const [isAlertOpen, setIsAlertOpen] = useState(false);
-    const [isSaveAlertOpen, setIsSaveAlertOpen] = useState(false);
-    const [isValidationError, setIsValidationError] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
-    const cancelRef = useRef<HTMLButtonElement>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const toast = useToast();
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
+    const cancelRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -59,7 +59,13 @@ const Editor = () => {
 
     const saveMemo = async () => {
         if (!userId) {
-            setIsSaveAlertOpen(true);
+            toast({
+                title: "User not logged in",
+                description: "Please log in to save your memo.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
             return;
         }
 
@@ -71,7 +77,13 @@ const Editor = () => {
                 content,
                 createdAt: new Date()
             });
-            setIsSaveAlertOpen(true);
+            toast({
+                title: "Memo Saved",
+                description: "Your memo has been saved successfully!",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
             setTitle('');
             setDescription('');
             setContent('');
@@ -79,6 +91,13 @@ const Editor = () => {
         } catch (e) {
             if (e instanceof FirebaseError) {
                 console.error('Error adding document: ', e);
+                toast({
+                    title: "Error Saving Memo",
+                    description: "There was an error saving your memo. Please try again.",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                });
             }
         }
     };
@@ -109,16 +128,20 @@ const Editor = () => {
 
     const handlePublishClick = () => {
         if (!title || !description || !content) {
-            setIsValidationError(true);
+            toast({
+                title: "Validation Error",
+                description: "Title, Description, and Content cannot be empty.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
         } else {
             setIsAlertOpen(true);
         }
     };
 
-    const onClose = () => {
+    const onCloseAlert = () => {
         setIsAlertOpen(false);
-        setIsSaveAlertOpen(false);
-        setIsValidationError(false);
     };
 
     const openFileDialog = () => {
@@ -195,7 +218,7 @@ const Editor = () => {
             <AlertDialog
                 isOpen={isAlertOpen}
                 leastDestructiveRef={cancelRef}
-                onClose={onClose}
+                onClose={onCloseAlert}
                 isCentered
             >
                 <AlertDialogOverlay>
@@ -209,61 +232,11 @@ const Editor = () => {
                         </AlertDialogBody>
 
                         <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={onClose}>
+                            <Button ref={cancelRef} onClick={onCloseAlert}>
                                 Cancel
                             </Button>
                             <Button colorScheme="teal" onClick={saveMemo} ml={3}>
                                 Publish
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
-
-            <AlertDialog
-                isOpen={isSaveAlertOpen}
-                leastDestructiveRef={cancelRef}
-                onClose={onClose}
-                isCentered
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Memo Saved
-                        </AlertDialogHeader>
-
-                        <AlertDialogBody>
-                            Your memo has been saved successfully!
-                        </AlertDialogBody>
-
-                        <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={onClose}>
-                                OK
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
-
-            <AlertDialog
-                isOpen={isValidationError}
-                leastDestructiveRef={cancelRef}
-                onClose={onClose}
-                isCentered
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
-                            Validation Error
-                        </AlertDialogHeader>
-
-                        <AlertDialogBody>
-                            Title, Description, and Content cannot be empty.
-                        </AlertDialogBody>
-
-                        <AlertDialogFooter>
-                            <Button ref={cancelRef} onClick={onClose}>
-                                OK
                             </Button>
                         </AlertDialogFooter>
                     </AlertDialogContent>
