@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import useAuthRedirect from "@/hooks/useAuthRedirect";
-import { Spinner, Box, VStack, Image } from '@chakra-ui/react';
+import { Spinner, Box, VStack, Image, Button, Link, Text } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
 import UserProfile from '@/components/game/UserProfile';
 import Island from '@/components/game/Island';
-import View from '@/components/game/View'; // 新しく作成したコンポーネントをインポート
+import NextLink from "next/link"
 
 const Game = () => {
     useAuthRedirect();
@@ -48,8 +48,8 @@ const Game = () => {
                     {user && <UserProfile photoURL={user.photoURL} displayName={user.displayName} bio={user.bio} />}
                     <Island />
                 </div>
-                <div>
-                    <View />
+                <div className="w-fit ml-auto">
+                    <NextLink href="/works/view"><Text>Play / 労働</Text></NextLink>
                 </div>
             </Layout>
         </div>

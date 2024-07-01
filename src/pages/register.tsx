@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { auth, db } from '@/firebase/firebaseConfig';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, query, where } from 'firebase/firestore';
 import { Button, Heading, Input, Link, Text } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import NextLink from "next/link"
@@ -12,19 +12,36 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
+    const [userID, setUserID] = useState('');
+    const [error, setError] = useState('');
     const router = useRouter();
 
     const handleRegister = async () => {
+        if (!userID) {
+            setError('User ID is required.');
+            return;
+        }
+        
         try {
+            const userIDQuery = query(collection(db, 'users'), where('userID', '==', userID));
+            const userIDSnapshot = await getDocs(userIDQuery);
+            
+            if (!userIDSnapshot.empty) {
+                setError('User ID already exists.');
+                return;
+            }
+
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             await setDoc(doc(db, 'users', user.uid), {
                 displayName,
-                email
+                email,
+                userID
             });
             router.push('/');
         } catch (error) {
             console.error('Error registering:', error);
+            setError('Error registering. Please try again.');
         }
     };
 
@@ -35,11 +52,13 @@ const Register = () => {
             const user = result.user;
             await setDoc(doc(db, 'users', user.uid), {
                 displayName: user.displayName,
-                email: user.email
+                email: user.email,
+                userID: userID
             });
             router.push('/');
         } catch (error) {
             console.error('Error signing in with Google:', error);
+            setError('Error signing in with Google. Please try again.');
         }
     };
 
@@ -54,6 +73,15 @@ const Register = () => {
                     placeholder="Display Name"
                     className="w-full mb-5"
                 />
+                <Input
+                    type="text"
+                    value={userID}
+                    onChange={(e) => setUserID(e.target.value)}
+                    placeholder="User ID"
+                    className="w-full mb-5"
+                    isRequired
+                />
+                {error && <Text className="mb-5 text-red-500 text-sm">{error}</Text>}
                 <Input
                     type="email"
                     value={email}

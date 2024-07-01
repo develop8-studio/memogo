@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { db, auth, storage } from '@/firebase/firebaseConfig';
-import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { deleteUser, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updatePassword } from 'firebase/auth';
+import { doc, getDoc, updateDoc, deleteDoc, query, where, getDocs, collection } from 'firebase/firestore';
+import { deleteUser, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider, InputGroup } from '@chakra-ui/react';
+import { Button, Input, Text, Textarea, Image, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Spinner, Avatar, Heading, Divider } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import useAuthRedirect from '@/hooks/useAuthRedirect';
 import Head from 'next/head';
@@ -26,6 +26,7 @@ const Settings = () => {
     useAuthRedirect();
     const [user, setUser] = useState<any>(null);
     const [displayName, setDisplayName] = useState('');
+    const [userID, setUserID] = useState('');
     const [bio, setBio] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [headerFile, setHeaderFile] = useState<File | null>(null); // Header file state
@@ -40,8 +41,8 @@ const Settings = () => {
     const [croppingHeader, setCroppingHeader] = useState(false); // State to determine which image is being cropped
     const [croppingAvatar, setCroppingAvatar] = useState(false); // State to determine which image is being cropped
     const [loading, setLoading] = useState(true);
-    const [newPassword, setNewPassword] = useState('');
     const [twitter, setTwitter] = useState('');
+    const [userIDError, setUserIDError] = useState('');
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const {
@@ -68,6 +69,7 @@ const Settings = () => {
                     const userData = docSnap.data();
                     setUser(userData);
                     setDisplayName(userData.displayName);
+                    setUserID(userData.userID || '');
                     setBio(userData.bio);
                     setPhotoURL(userData.photoURL || '');
                     setHeaderPhotoURL(userData.headerPhotoURL || ''); // Set header photo URL state
@@ -126,30 +128,36 @@ const Settings = () => {
         }
     };
 
+    const checkUserIDAvailability = async () => {
+        if (userID && userID !== user.userID) {
+            const userQuery = query(collection(db, 'users'), where('userID', '==', userID));
+            const querySnapshot = await getDocs(userQuery);
+            if (!querySnapshot.empty) {
+                setUserIDError('User ID is already taken');
+                return false;
+            }
+        }
+        setUserIDError('');
+        return true;
+    };
+
     const updateProfile = async () => {
+        const isUserIDAvailable = await checkUserIDAvailability();
+        if (!isUserIDAvailable) return;
+
         if (currentUser) {
             const docRef = doc(db, 'users', currentUser.uid);
             const updatedData: { [key: string]: any } = {
                 displayName,
                 bio,
                 twitter, // Add the Twitter account ID to the updated data
+                userID,
             };
 
             await updateDoc(docRef, updatedData);
 
-            if (newPassword) {
-                try {
-                    await updatePassword(currentUser, newPassword);
-                    setDialogMessage('Profile and password updated successfully!');
-                } catch (error) {
-                    console.error(error);
-                    setDialogMessage('Profile updated, but failed to update password.');
-                }
-            } else {
-                setDialogMessage('Profile updated!');
-            }
+            setDialogMessage('Profile updated!');
             onOpen();
-            setNewPassword('');
         }
     };
 
@@ -261,18 +269,19 @@ const Settings = () => {
                                     onChange={(e) => setDisplayName(e.target.value)}
                                     className="w-full mb-3"
                                 />
+                                <Text className="mb-1">User ID <span className="text-red-500">*</span></Text>
+                                <Input
+                                    type="text"
+                                    value={userID}
+                                    onChange={(e) => setUserID(e.target.value)}
+                                    className="w-full mb-1"
+                                />
+                                {userIDError && <Text color="red.500" className="mb-3">{userIDError}</Text>}
                                 <Text className="mb-1">Bio</Text>
                                 <Textarea
                                     value={bio}
                                     onChange={(e) => setBio(e.target.value)}
                                     className="w-full mb-3"
-                                />
-                                <Text className="mb-1">New Password</Text>
-                                <Input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full mb-5"
                                 />
                                 <Button onClick={updateProfile} colorScheme='green' disabled={uploading} className="w-full">
                                     {uploading && <Spinner size="sm" className="mr-2.5" />}

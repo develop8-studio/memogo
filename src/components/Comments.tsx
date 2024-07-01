@@ -11,6 +11,7 @@ interface Comment {
     photoURL: string;
     text: string;
     createdAt: any;
+    userID?: string; // Optional property to store userID
 }
 
 interface CommentsProps {
@@ -28,7 +29,14 @@ const Comments = ({ memoId }: CommentsProps) => {
         const q = query(collection(db, 'comments'), where('memoId', '==', memoId));
         const querySnapshot = await getDocs(q);
         const fetchedComments: Comment[] = querySnapshot.docs.map(doc => doc.data() as Comment);
-        setComments(fetchedComments);
+        const commentsWithUserIDs = await Promise.all(fetchedComments.map(async (comment) => {
+            const userDoc = await getDoc(doc(db, 'users', comment.userId));
+            return {
+                ...comment,
+                userID: userDoc.exists() ? userDoc.data().userID : comment.userId
+            };
+        }));
+        setComments(commentsWithUserIDs);
     };
 
     useEffect(() => {
@@ -78,11 +86,11 @@ const Comments = ({ memoId }: CommentsProps) => {
                 {comments.map((c, index) => (
                     <Box key={index} w="full">
                         <HStack align="start">
-                            <NextLink href={`/user?id=${c.userId}`} passHref>
-                                <Avatar src={c.photoURL} name={c.userId} size="md" />
+                            <NextLink href={`/${c.userID}`} passHref>
+                                <Avatar src={c.photoURL} name={c.displayName} size="md" />
                             </NextLink>
                             <VStack align="start" spacing={1}>
-                                <NextLink href={`/user?id=${c.userId}`} passHref>
+                                <NextLink href={`/${c.userID}`} passHref>
                                     <Text fontWeight="bold">{c.displayName}</Text>
                                 </NextLink>
                                 <Text>{c.text}</Text>

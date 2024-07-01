@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/firebase/firebaseConfig';
 import { collection, query, getDocs, orderBy, doc, getDoc, startAfter, limit } from 'firebase/firestore';
 import Link from 'next/link';
-import { Box, VStack, HStack, Avatar, Heading, Text, Button, Spinner, Input, InputGroup, InputRightElement, IconButton, Image, Flex, Card, CardHeader, CardBody, CardFooter } from '@chakra-ui/react';
-import { BsThreeDotsVertical } from 'react-icons/bs';
-import { BiLike, BiChat, BiShare } from 'react-icons/bi';
+import { Box, VStack, HStack, Avatar, Heading, Text, Button, Spinner, Input, InputGroup, InputRightElement, Image, Flex, Card, CardHeader, CardBody } from '@chakra-ui/react';
 import Layout from '@/components/Layout';
 import Head from 'next/head';
 import Fuse from 'fuse.js';
@@ -18,6 +16,7 @@ interface Memo {
     createdAt: any;
     photoURL: string;
     displayName: string;
+    userID: string; // ユーザーIDを追加
 }
 
 const extractImageUrlFromMarkdown = (markdown: string) => {
@@ -60,6 +59,7 @@ const Search = () => {
                             ...memoData,
                             photoURL: userData.photoURL || '/default-avatar.png',
                             displayName: userData.displayName || 'Anonymous',
+                            userID: userData.userID // ユーザーIDを取得
                         } as Memo);
                     }
                 }
@@ -71,7 +71,7 @@ const Search = () => {
             setFuse(new Fuse(memosData, {
                 keys: ['title', 'description'],
                 includeScore: true,
-                threshold: 0.3, // 部分一致の閾値を調整
+                threshold: 0.3,
             }));
         } else {
             setMemos((prevMemos) => {
@@ -135,22 +135,16 @@ const Search = () => {
                                     <CardHeader>
                                         <Flex>
                                             <Flex flex='1' gap='4' alignItems='center' flexWrap='wrap'>
-                                                <Link href={`/user?id=${memo.userId}`} passHref>
+                                                <Link href={`/${memo.userID}`} passHref>
                                                     <Avatar name={memo.displayName} src={memo.photoURL} />
                                                 </Link>
                                                 <Box>
-                                                    <Link href={`/user?id=${memo.userId}`} passHref>
+                                                    <Link href={`/${memo.userID}`} passHref>
                                                         <Heading size='sm'>{memo.displayName}</Heading>
                                                     </Link>
                                                     <Text className="text-gray-500 text-sm mt-1">{memo.createdAt?.toDate().toLocaleString()}</Text>
                                                 </Box>
                                             </Flex>
-                                            {/* <IconButton
-                                                variant='ghost'
-                                                colorScheme='gray'
-                                                aria-label='See menu'
-                                                icon={<BsThreeDotsVertical />}
-                                            /> */}
                                         </Flex>
                                     </CardHeader>
                                     <CardBody className="mb-5">
@@ -160,25 +154,6 @@ const Search = () => {
                                         <Text>{truncateDescription(memo.description)}</Text>
                                         {imageUrl && <Image objectFit='cover' src={imageUrl} alt='Memo image' className='mt-5' />}
                                     </CardBody>
-                                    {/* <CardFooter
-                                        justify='space-between'
-                                        flexWrap='wrap'
-                                        sx={{
-                                        '& > button': {
-                                            minW: '136px',
-                                        },
-                                        }}
-                                    >
-                                        <Button flex='1' variant='ghost' leftIcon={<BiLike />}>
-                                        Like
-                                        </Button>
-                                        <Button flex='1' variant='ghost' leftIcon={<BiChat />}>
-                                        Comment
-                                        </Button>
-                                        <Button flex='1' variant='ghost' leftIcon={<BiShare />}>
-                                        Share
-                                        </Button>
-                                    </CardFooter> */}
                                 </Card>
                             </Box>
                         );

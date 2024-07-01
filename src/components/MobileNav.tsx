@@ -4,8 +4,9 @@ import { Box, Divider, Flex, IconButton, Stack, useDisclosure, Button, AlertDial
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { FiHome, FiUser, FiSettings, FiPenTool, FiUsers, FiBookmark, FiTruck, FiLogOut, FiHash, FiSearch, FiBook, FiLogIn, FiUserPlus, FiFeather, FiDroplet } from 'react-icons/fi';
 import { IconType } from 'react-icons';
-import { auth } from '@/firebase/firebaseConfig';
+import { auth, db } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { getDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 
 interface MobileNavItemProps {
@@ -34,14 +35,26 @@ const MobileNav: FC = () => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [userID, setUserID] = useState<string | null>(null);
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user);
+        try {
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            setUserID(userData.userID);
+          }
+        } catch (error) {
+          console.error('Failed to fetch userID:', error);
+        }
       } else {
         setUser(null);
+        setUserID(null);
       }
     });
 
@@ -77,15 +90,13 @@ const MobileNav: FC = () => {
         {isOpen ? (
           <Box className="bg-white shadow-sm h-screen pt-3">
             <Stack as="nav" spacing={3}>
-              {/* <MobileNavItem icon={FiHome} label="Home" href="/" /> */}
               <MobileNavItem icon={FiHash} label="Feed" href="/feed" />
               <MobileNavItem icon={FiSearch} label="Search" href="/search" />
-              {user && <MobileNavItem icon={FiUser} label="Profile" href={`/user?id=${user.uid}`} />}
+              {user && userID && <MobileNavItem icon={FiUser} label="Profile" href={`/${userID}`} />}
               {user && <MobileNavItem icon={FiUserPlus} label="Following" href="/following" />}
-              {user && <MobileNavItem icon={FiBookmark} label="Bookmarks" href="bookmarks" />}
+              {user && <MobileNavItem icon={FiBookmark} label="Bookmarks" href="/bookmarks" />}
               {user && <MobileNavItem icon={FiFeather} label="Editor" href="/editor" />}
               {user && <MobileNavItem icon={FiDroplet} label="昇格せよ シャチクのモリ" href="/works" />}
-              {/* <MobileNavItem icon={FiSettings} label="Settings" href="/settings" /> */}
             </Stack>
             <Divider className='my-3' />
             <Stack as="nav" spacing={3}>

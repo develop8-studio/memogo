@@ -24,6 +24,7 @@ interface MemoData {
 interface UserData {
     displayName: string;
     photoURL: string;
+    userID: string;
 }
 
 const Memo = () => {
@@ -145,11 +146,11 @@ const Memo = () => {
                             {memoData.userId !== currentUserId && authorData && (
                                 <Box className="p-3 w-full rounded-md mt-5 border">
                                     <HStack spacing={3} align="center">
-                                        <Link href={`/user?id=${memoData.userId}`} passHref>
+                                        <Link href={`/${authorData.userID}`} passHref>
                                             <Avatar src={authorData.photoURL} name={authorData.displayName} size="md" />
                                         </Link>
                                         <VStack align="start" spacing={0}>
-                                            <Link href={`/user?id=${memoData.userId}`} passHref>
+                                            <Link href={`/${authorData.userID}`} passHref>
                                                 <Text fontWeight="bold">{authorData.displayName}</Text>
                                             </Link>
                                         </VStack>

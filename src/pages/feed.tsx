@@ -15,6 +15,7 @@ interface Memo {
     createdAt: any;
     photoURL: string;
     displayName: string;
+    userID: string; // ユーザーIDを追加
 }
 
 const extractImageUrlFromMarkdown = (markdown: string) => {
@@ -54,6 +55,7 @@ const Feed = () => {
                             ...memoData,
                             photoURL: userData.photoURL || '/default-avatar.png',
                             displayName: userData.displayName || 'Anonymous',
+                            userID: userData.userID // ユーザーIDを取得
                         } as Memo);
                     }
                 }
@@ -93,11 +95,11 @@ const Feed = () => {
                                     <CardHeader>
                                         <Flex>
                                             <Flex flex='1' gap='4' alignItems='center' flexWrap='wrap'>
-                                                <Link href={`/user?id=${memo.userId}`} passHref>
+                                                <Link href={`/${memo.userID}`} passHref>
                                                     <Avatar name={memo.displayName} src={memo.photoURL} />
                                                 </Link>
                                                 <Box>
-                                                    <Link href={`/user?id=${memo.userId}`} passHref>
+                                                    <Link href={`/${memo.userID}`} passHref>
                                                         <Heading size='sm'>{memo.displayName}</Heading>
                                                     </Link>
                                                     <Text className="text-gray-500 text-sm mt-1">{memo.createdAt?.toDate().toLocaleString()}</Text>

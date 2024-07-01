@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FaHome, FaUser, FaCog, FaSignOutAlt, FaBookmark, FaPen, FaUserFriends, FaHashtag, FaSearch, FaSignInAlt } from 'react-icons/fa';
-import Link from 'next/link';
-import { auth } from '@/firebase/firebaseConfig';
+import { auth, db } from '@/firebase/firebaseConfig';
 import { signOut, onAuthStateChanged, User } from 'firebase/auth';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Button, AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay, Image } from '@chakra-ui/react';
-import { FiBook, FiBookmark, FiDroplet, FiFeather, FiHash, FiLogIn, FiLogOut, FiMeh, FiPenTool, FiSearch, FiSettings, FiUser, FiUserPlus } from 'react-icons/fi';
+import { FiBookmark, FiDroplet, FiFeather, FiHash, FiLogIn, FiLogOut, FiSearch, FiUser, FiUserPlus } from 'react-icons/fi';
+import { getDoc, doc } from 'firebase/firestore';
 
 interface MenuItemProps {
     icon: React.ReactNode;
@@ -19,13 +19,25 @@ const SideBar: React.FC = () => {
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const onClose = () => setIsAlertOpen(false);
     const cancelRef = React.useRef<HTMLButtonElement>(null);
+    const [userID, setUserID] = useState<string | null>('placeholder');
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setUser(user);
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        setUserID(userData.userID);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch userID:', error);
+                }
             } else {
                 setUser(null);
+                setUserID(null);
             }
         });
 
@@ -49,15 +61,13 @@ const SideBar: React.FC = () => {
                     <Image src="/memogo.png" className="rounded-md" />
                 </Link>
                 <div className="flex-grow">
-                    {/* <MenuItem icon={<FaHome className="text-lg" />} href="/" /> */}
                     <MenuItem icon={<FiHash className="text-lg" />} href="/feed" />
                     <MenuItem icon={<FiSearch className="text-lg" />} href="/search" />
-                    {user && <MenuItem icon={<FiUser className="text-lg" />} href={`/user?id=${user.uid}`} />}
+                    {user && <MenuItem icon={<FiUser className="text-lg" />} href={`/${userID}`} />}
                     {user && <MenuItem icon={<FiUserPlus className="text-lg" />} href='/following' />}
                     {user && <MenuItem icon={<FiBookmark className="text-lg" />} href='/bookmarks' />}
                     {user && <MenuItem icon={<FiFeather className="text-lg" />} href='/editor' />}
                     {user && <MenuItem icon={<FiDroplet className="text-lg" />} href='/works' />}
-                    {/* {user && <MenuItem icon={<FiSettings className="text-lg" />} href='/settings' />} */}
                 </div>
                 <div>
                     {!user && <MenuItem icon={<FiLogIn className="text-lg" />} href='/login' />}
