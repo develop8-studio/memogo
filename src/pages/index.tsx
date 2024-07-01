@@ -55,7 +55,7 @@ export default function Home() {
             If you have any questions or need help, visit our <Link href="/support" color="teal.500">support page</Link>.
           </Text>
 
-          <Image src="/boy.png" className="rounded-md mt-5" />
+          {/* <Image src="/boy.png" className="rounded-md mt-5" /> */}
         </Layout>
       </div>
     </>
